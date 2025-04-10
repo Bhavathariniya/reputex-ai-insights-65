@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ScoreCard from '@/components/ScoreCard';
 import { 
   Sparkles, 
@@ -10,12 +10,16 @@ import {
   Users,
   BarChart2,
   AlertTriangle,
-  Info
+  Info,
+  CheckCircle,
+  XCircle,
+  Volume2
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface AnalysisReportProps {
   address: string;
@@ -68,6 +72,7 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
 }) => {
   const formattedAddress = address.slice(0, 6) + '...' + address.slice(-4);
   const timeAgo = formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+  const [audioPlayed, setAudioPlayed] = useState(false);
   
   const sentences = analysis.split('. ').filter(Boolean);
   
@@ -91,6 +96,67 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
     holders: "Analysis of token distribution across different wallet types and concentration patterns",
     fraud: "Probability assessment of fraudulent activity or scam indicators"
   };
+  
+  const calculateVerdict = () => {
+    const availableScores = [
+      scores.trust_score, 
+      scores.developer_score, 
+      scores.liquidity_score
+    ];
+    
+    if (scores.community_score !== undefined) availableScores.push(scores.community_score);
+    if (scores.holder_distribution !== undefined) availableScores.push(scores.holder_distribution);
+    
+    const fraudRisk = scores.fraud_risk || 0;
+    const scoresAbove70 = availableScores.filter(score => score >= 70).length;
+    const scoresBelow50 = availableScores.filter(score => score < 50).length;
+    const totalScores = availableScores.length;
+    
+    if (fraudRisk > 80 || scoresBelow50 > totalScores / 2) {
+      return {
+        verdict: "High Risk – Caution Advised",
+        icon: <XCircle className="h-6 w-6 text-neon-red" />,
+        color: "destructive",
+        description: "Multiple critical issues detected. Exercise extreme caution.",
+        audioFile: "play_danger.mp3"
+      };
+    }
+    else if (fraudRisk > 60 || scoresBelow50 > 0) {
+      return {
+        verdict: "Likely Risky",
+        icon: <AlertTriangle className="h-6 w-6 text-neon-orange" />,
+        color: "border-neon-orange bg-[#FF8630]/10 text-neon-orange",
+        description: "Some concerning indicators present. Proceed with caution.",
+        audioFile: "play_risky.mp3"
+      };
+    }
+    else {
+      return {
+        verdict: "Likely Legit",
+        icon: <CheckCircle className="h-6 w-6 text-neon-pink" />,
+        color: "border-neon-pink bg-[#E31366]/10 text-neon-pink",
+        description: "Analysis indicates favorable metrics across major indicators.",
+        audioFile: "play_legit.mp3"
+      };
+    }
+  };
+  
+  const verdictInfo = calculateVerdict();
+  
+  useEffect(() => {
+    if (!audioPlayed) {
+      try {
+        const audio = new Audio(`/${verdictInfo.audioFile}`);
+        audio.volume = 0.5;
+        audio.play().catch(error => {
+          console.log("Audio playback failed: ", error);
+        });
+        setAudioPlayed(true);
+      } catch (error) {
+        console.error("Error playing audio:", error);
+      }
+    }
+  }, [verdictInfo.audioFile, audioPlayed]);
   
   return (
     <div className="w-full max-w-4xl mx-auto animate-fade-in">
@@ -122,6 +188,29 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
             <ExternalLink className="h-3 w-3 mr-1" />
             View on Explorer
           </a>
+        </div>
+      </div>
+      
+      <div className={`mb-6 rounded-lg border ${verdictInfo.color}`}>
+        <div className="p-4">
+          <div className="flex items-center gap-2 mb-2">
+            {verdictInfo.icon}
+            <h2 className="text-xl font-bold">Final Verdict: {verdictInfo.verdict}</h2>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="ml-auto"
+              onClick={() => {
+                const audio = new Audio(`/${verdictInfo.audioFile}`);
+                audio.volume = 0.5;
+                audio.play().catch(e => console.error(e));
+              }}
+            >
+              <Volume2 className="h-4 w-4" />
+              <span className="sr-only">Play sound</span>
+            </Button>
+          </div>
+          <p className="text-sm">{verdictInfo.description}</p>
         </div>
       </div>
       
@@ -173,11 +262,11 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
           {scores.fraud_risk !== undefined && (
             <ScoreCardWithInfo 
               title="Fraud Risk" 
-              score={100 - scores.fraud_risk}  // Invert the score so higher is better
+              score={100 - scores.fraud_risk}
               type="fraud"
               description={scoreDescriptions.fraud}
               icon={<AlertTriangle className="h-6 w-6" />}
-              invertScore={true}  // This indicates that lower values are better
+              invertScore={true}
             />
           )}
         </div>
