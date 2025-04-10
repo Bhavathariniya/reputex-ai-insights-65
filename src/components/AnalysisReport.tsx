@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ScoreCard from '@/components/ScoreCard';
 import { 
@@ -16,6 +15,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface AnalysisReportProps {
   address: string;
@@ -69,10 +69,8 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
   const formattedAddress = address.slice(0, 6) + '...' + address.slice(-4);
   const timeAgo = formatDistanceToNow(new Date(timestamp), { addSuffix: true });
   
-  // Split analysis into sentences for better presentation
   const sentences = analysis.split('. ').filter(Boolean);
   
-  // Get explorer URL based on network
   const getExplorerUrl = () => {
     const explorers: Record<string, string> = {
       ethereum: 'https://etherscan.io/address/',
@@ -85,7 +83,6 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
     return (explorers[network] || explorers.ethereum) + address;
   };
   
-  // Score descriptions for hover cards
   const scoreDescriptions = {
     trust: "Overall trust level based on transaction history, contract verification, and behavior patterns",
     developer: "Assessment of code quality, development activity, and technical implementation",
@@ -151,7 +148,6 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
         />
       </div>
       
-      {/* Additional scores if available */}
       {(scores.community_score !== undefined || scores.holder_distribution !== undefined || scores.fraud_risk !== undefined) && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {scores.community_score !== undefined && (
@@ -203,7 +199,6 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
   );
 };
 
-// Wrapper component for ScoreCard with HoverCard info
 interface ScoreCardWithInfoProps {
   title: string;
   score: number;
