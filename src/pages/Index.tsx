@@ -26,6 +26,7 @@ const Index = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Check for address in URL query params
   useEffect(() => {
     const query = new URLSearchParams(location.search);
     const addressParam = query.get('address');
@@ -43,40 +44,55 @@ const Index = () => {
     setAnalysis(null);
     
     try {
+      // First check if we already have this score on the blockchain
       const existingScoreResponse = await checkBlockchainForScore(address);
       
       if (existingScoreResponse.data) {
+        // Use existing score
         setAnalysis(existingScoreResponse.data);
         toast.success('Retrieved existing analysis from blockchain');
         setIsLoading(false);
         return;
       }
       
+      // If no existing score, perform new analysis
+      // Fetch wallet transaction data
       const walletData = await getWalletTransactions(address);
+      
+      // Fetch token data
       const tokenData = await getTokenData(address);
+      
+      // Simulate GitHub repo activity
       const repoData = await getRepoActivity("example/repo");
       
+      // Aggregate the data
       const aggregatedData = {
         ...walletData.data,
         ...tokenData.data,
         ...repoData.data,
-        community_size: "Medium",
+        community_size: "Medium", // Simulated community size
         network: network,
       };
       
+      // Get AI analysis
       const aiAnalysisResponse = await getAIAnalysis(aggregatedData);
       
       if (aiAnalysisResponse.data) {
+        // Enhance with additional scores
         const enhancedData = {
           ...aiAnalysisResponse.data,
-          community_score: Math.floor(Math.random() * 30) + 50,
-          holder_distribution: Math.floor(Math.random() * 40) + 40,
-          fraud_risk: Math.floor(Math.random() * 30) + 10,
+          community_score: Math.floor(Math.random() * 30) + 50, // Random score between 50-80
+          holder_distribution: Math.floor(Math.random() * 40) + 40, // Random score between 40-80
+          fraud_risk: Math.floor(Math.random() * 30) + 10, // Random score between 10-40
           network: network,
         };
         
+        // Store the analysis result
         setAnalysis(enhancedData);
+        
+        // Store on blockchain
         await storeScoreOnBlockchain(address, enhancedData);
+        
         toast.success('Analysis complete');
       } else {
         toast.error('Failed to analyze address');
@@ -92,14 +108,16 @@ const Index = () => {
   const handleSubmit = (address: string, network: string) => {
     setSearchedAddress(address);
     setSearchedNetwork(network);
+    // Update URL with the address and network parameters
     navigate(`/?address=${address}&network=${network}`);
   };
 
   const toggleAudio = () => {
     setAudioEnabled(!audioEnabled);
     if (!audioEnabled) {
+      // Play ambient sound
       try {
-        const audio = new Audio('/ambient.mp3');
+        const audio = new Audio('/ambient.mp3'); // This file would need to be added
         audio.volume = 0.2;
         audio.loop = true;
         audio.play().catch(error => {
@@ -109,6 +127,7 @@ const Index = () => {
         console.error("Error playing audio:", error);
       }
     } else {
+      // Stop ambient sound - this is simplified; you'd need to keep a reference to the audio element
       const audioElements = document.querySelectorAll('audio');
       audioElements.forEach(audio => {
         audio.pause();
@@ -120,15 +139,6 @@ const Index = () => {
   return (
     <div className="flex flex-col min-h-screen relative overflow-hidden">
       <Navbar />
-      
-      <div className="cyber-grid"></div>
-      <div className="cyber-circles">
-        <div className="cyber-circle"></div>
-        <div className="cyber-circle"></div>
-        <div className="cyber-circle"></div>
-        <div className="cyber-circle"></div>
-      </div>
-      <div className="cyber-dots"></div>
       
       <div className="audio-toggle" onClick={toggleAudio}>
         {audioEnabled ? (
@@ -190,6 +200,7 @@ const Index = () => {
       
       <Footer />
       
+      {/* Wave animation in background */}
       <div className="wave-bg animate-wave"></div>
     </div>
   );
