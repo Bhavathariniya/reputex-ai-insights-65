@@ -7,7 +7,10 @@ import {
   TrendingUp,
   AlertTriangle,
   ShieldCheck,
-  ShieldX
+  ShieldX,
+  Users,
+  Droplet,
+  BarChart2
 } from 'lucide-react';
 
 export enum ScoreLevel {
@@ -19,7 +22,7 @@ export enum ScoreLevel {
 interface ScoreCardProps {
   title: string;
   score: number;
-  type: 'trust' | 'developer' | 'liquidity';
+  type: 'trust' | 'developer' | 'liquidity' | 'community' | 'holders' | 'fraud';
   description?: string;
 }
 
@@ -50,6 +53,21 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ title, score, type, description }
           <TrendingUp className="h-6 w-6 text-neon-pink" />
         ) : (
           <BarChart3 className="h-6 w-6 text-neon-orange" />
+        );
+      
+      case 'community':
+        return <Users className="h-6 w-6 text-neon-pink" />;
+        
+      case 'holders':
+        return <BarChart2 className="h-6 w-6 text-neon-yellow" />;
+        
+      case 'fraud':
+        return scoreLevel === ScoreLevel.HIGH ? (
+          <ShieldCheck className="h-6 w-6 text-neon-pink" />
+        ) : scoreLevel === ScoreLevel.MEDIUM ? (
+          <AlertTriangle className="h-6 w-6 text-neon-orange" />
+        ) : (
+          <AlertTriangle className="h-6 w-6 text-neon-red" />
         );
         
       default:

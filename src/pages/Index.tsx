@@ -20,6 +20,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [analysis, setAnalysis] = useState<any | null>(null);
   const [searchedAddress, setSearchedAddress] = useState<string | null>(null);
+  const [searchedNetwork, setSearchedNetwork] = useState<string>('ethereum');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -27,14 +28,16 @@ const Index = () => {
   useEffect(() => {
     const query = new URLSearchParams(location.search);
     const addressParam = query.get('address');
+    const networkParam = query.get('network') || 'ethereum';
     
     if (addressParam) {
       setSearchedAddress(addressParam);
-      handleAddressSearch(addressParam);
+      setSearchedNetwork(networkParam);
+      handleAddressSearch(addressParam, networkParam);
     }
   }, [location]);
 
-  const handleAddressSearch = async (address: string) => {
+  const handleAddressSearch = async (address: string, network: string) => {
     setIsLoading(true);
     setAnalysis(null);
     
@@ -66,17 +69,27 @@ const Index = () => {
         ...tokenData.data,
         ...repoData.data,
         community_size: "Medium", // Simulated community size
+        network: network,
       };
       
       // Get AI analysis
       const aiAnalysisResponse = await getAIAnalysis(aggregatedData);
       
       if (aiAnalysisResponse.data) {
+        // Enhance with additional scores
+        const enhancedData = {
+          ...aiAnalysisResponse.data,
+          community_score: Math.floor(Math.random() * 30) + 50, // Random score between 50-80
+          holder_distribution: Math.floor(Math.random() * 40) + 40, // Random score between 40-80
+          fraud_risk: Math.floor(Math.random() * 30) + 10, // Random score between 10-40
+          network: network,
+        };
+        
         // Store the analysis result
-        setAnalysis(aiAnalysisResponse.data);
+        setAnalysis(enhancedData);
         
         // Store on blockchain
-        await storeScoreOnBlockchain(address, aiAnalysisResponse.data);
+        await storeScoreOnBlockchain(address, enhancedData);
         
         toast.success('Analysis complete');
       } else {
@@ -90,10 +103,11 @@ const Index = () => {
     }
   };
 
-  const handleSubmit = (address: string) => {
+  const handleSubmit = (address: string, network: string) => {
     setSearchedAddress(address);
-    // Update URL with the address parameter
-    navigate(`/?address=${address}`);
+    setSearchedNetwork(network);
+    // Update URL with the address and network parameters
+    navigate(`/?address=${address}&network=${network}`);
   };
 
   return (
@@ -118,10 +132,14 @@ const Index = () => {
           {!isLoading && analysis && searchedAddress && (
             <AnalysisReport
               address={searchedAddress}
+              network={searchedNetwork || 'ethereum'}
               scores={{
                 trust_score: analysis.trust_score,
                 developer_score: analysis.developer_score,
                 liquidity_score: analysis.liquidity_score,
+                community_score: analysis.community_score,
+                holder_distribution: analysis.holder_distribution,
+                fraud_risk: analysis.fraud_risk,
               }}
               analysis={analysis.analysis}
               timestamp={analysis.timestamp}
@@ -133,7 +151,7 @@ const Index = () => {
               <div className="glass-card rounded-xl p-8 text-center">
                 <h3 className="text-2xl font-semibold mb-4">Enter an address to analyze</h3>
                 <p className="text-muted-foreground">
-                  Get comprehensive reputation scores and AI analysis for any Ethereum wallet or token address.
+                  Get comprehensive reputation scores and AI analysis for any blockchain wallet or token address.
                 </p>
               </div>
             </div>

@@ -8,13 +8,40 @@ export interface ApiResponse<T> {
 }
 
 // API endpoints - in a real app, move these to environment variables
-const ETHERSCAN_API_URL = "https://api.etherscan.io/api";
-const COINGECKO_API_URL = "https://api.coingecko.com/api/v3";
+const API_ENDPOINTS = {
+  ethereum: {
+    explorer: "https://api.etherscan.io/api",
+    price: "https://api.coingecko.com/api/v3/simple/token_price/ethereum"
+  },
+  binance: {
+    explorer: "https://api.bscscan.com/api",
+    price: "https://api.coingecko.com/api/v3/simple/token_price/binance-smart-chain"
+  },
+  polygon: {
+    explorer: "https://api.polygonscan.com/api",
+    price: "https://api.coingecko.com/api/v3/simple/token_price/polygon-pos"
+  },
+  arbitrum: {
+    explorer: "https://api.arbiscan.io/api",
+    price: "https://api.coingecko.com/api/v3/simple/token_price/arbitrum-one"
+  },
+  optimism: {
+    explorer: "https://api-optimistic.etherscan.io/api",
+    price: "https://api.coingecko.com/api/v3/simple/token_price/optimistic-ethereum"
+  }
+};
+
 const GITHUB_API_URL = "https://api.github.com";
 
 // For this MVP version, we'll use a placeholder API key
 // In production, this should be stored securely in environment variables
-const ETHERSCAN_API_KEY = "YOURAPIKEY"; 
+const API_KEYS = {
+  ethereum: "YOURAPIKEY",
+  binance: "YOURAPIKEY",
+  polygon: "YOURAPIKEY",
+  arbitrum: "YOURAPIKEY",
+  optimism: "YOURAPIKEY"
+};
 
 // Utility function to fetch data from APIs
 export async function fetchData<T>(url: string): Promise<ApiResponse<T>> {
@@ -35,31 +62,33 @@ export async function fetchData<T>(url: string): Promise<ApiResponse<T>> {
   }
 }
 
-// Etherscan API functions
-export async function getWalletTransactions(address: string): Promise<ApiResponse<any>> {
-  // In a real implementation, this would connect to Etherscan API
+// Blockchain Explorer API functions
+export async function getWalletTransactions(address: string, network: string = 'ethereum'): Promise<ApiResponse<any>> {
+  // In a real implementation, this would connect to the appropriate blockchain explorer API
   // For MVP, we'll simulate the response
   return simulateApiCall({
     status: "1",
     message: "OK",
     result: {
-      wallet_age: "2 years",
+      wallet_age: `${Math.floor(Math.random() * 5) + 1} years`,
       total_txns: Math.floor(Math.random() * 2000) + 100,
       num_contracts: Math.floor(Math.random() * 10) + 1,
       avg_balance: `${Math.floor(Math.random() * 10000)} USDT`,
+      network: network,
     }
   });
 }
 
-// CoinGecko API functions
-export async function getTokenData(tokenAddress: string): Promise<ApiResponse<any>> {
-  // In a real implementation, this would connect to CoinGecko API
+// Token data API functions
+export async function getTokenData(tokenAddress: string, network: string = 'ethereum'): Promise<ApiResponse<any>> {
+  // In a real implementation, this would connect to CoinGecko or similar API
   // For MVP, we'll simulate the response
   return simulateApiCall({
     liquidity: ["Low", "Medium", "High"][Math.floor(Math.random() * 3)],
     price_change_24h: (Math.random() * 20 - 10).toFixed(2) + "%",
     volume_24h: `$${Math.floor(Math.random() * 1000000)}`,
     market_cap: `$${Math.floor(Math.random() * 10000000)}`,
+    network: network,
   });
 }
 
@@ -88,7 +117,7 @@ async function simulateApiCall<T>(mockData: T): Promise<ApiResponse<T>> {
 
 // Function to get AI analysis (simulated)
 export async function getAIAnalysis(aggregatedData: any): Promise<ApiResponse<any>> {
-  // In a real implementation, this would call an OpenAI API endpoint
+  // In a real implementation, this would call an AI API endpoint
   // For MVP, we'll simulate the response
   
   // Generate random scores
@@ -96,30 +125,52 @@ export async function getAIAnalysis(aggregatedData: any): Promise<ApiResponse<an
   const developerScore = Math.floor(Math.random() * 60) + 40; // 40-100
   const liquidityScore = Math.floor(Math.random() * 50) + 50; // 50-100
   
-  const analysisTexts = [
-    "The address shows consistent transaction history and good liquidity, indicating reliability and operational stability. Developer activity is moderate but steady. Based on transaction volume and age, this appears to be an established project with reasonable trust indicators.",
-    "Analysis reveals strong developer commitment with frequent commits and updates. Liquidity levels are adequate for current market cap. The address has a solid transaction history with diverse interactions, suggesting legitimate operations.",
-    "This address demonstrates patterns typical of established projects. The transaction count and wallet age suggest continuous development and user engagement. Contract interactions appear standard, and the balance history indicates proper treasury management.",
-  ];
+  const network = aggregatedData.network || 'ethereum';
   
-  // Randomly select one of the analysis texts
-  const analysisIndex = Math.floor(Math.random() * analysisTexts.length);
+  // Different analysis texts based on network
+  const analysisTexts: Record<string, string[]> = {
+    ethereum: [
+      "The Ethereum address shows consistent transaction history and good liquidity, indicating reliability and operational stability. Developer activity is moderate but steady. Based on transaction volume and age, this appears to be an established project with reasonable trust indicators.",
+      "Analysis of this Ethereum address reveals strong developer commitment with frequent commits and updates. Liquidity levels are adequate for current market cap. The address has a solid transaction history with diverse interactions, suggesting legitimate operations."
+    ],
+    binance: [
+      "This BNB Chain address demonstrates patterns typical of established projects. The transaction count and wallet age suggest continuous development and user engagement. Contract interactions appear standard, and the balance history indicates proper treasury management.",
+      "The BNB Chain token shows reasonable liquidity metrics and healthy trading volume. Developer activity is present though moderately active. The holder distribution indicates a relatively well-distributed token without excessive concentration."
+    ],
+    polygon: [
+      "The Polygon address demonstrates strong on-chain activity with consistent transactions and interaction patterns. Liquidity appears adequate and the project shows signs of active development and community engagement.",
+      "Analysis of this Polygon token reveals a healthy trading volume and reasonable market depth. The development team appears active with regular updates. Community growth metrics suggest increasing adoption."
+    ],
+    arbitrum: [
+      "This Arbitrum address shows promising metrics with good transaction volume and regular activity. Developer engagement is above average and liquidity ratios indicate healthy market participation.",
+      "The Arbitrum token demonstrates prudent treasury management and reasonable liquidity metrics. Code quality appears solid based on contract analysis, and community sentiment is generally positive."
+    ],
+    optimism: [
+      "The Optimism address shows healthy transaction patterns and active usage. Developer commitment appears strong with regular updates and improvements. Market liquidity is sufficient for current trading volume.",
+      "Analysis of this Optimism token reveals stable growth metrics and reasonable holder distribution. Contract security appears satisfactory and the project demonstrates signs of long-term viability."
+    ]
+  };
+  
+  // Select an analysis text based on network, or default to ethereum
+  const networkTexts = analysisTexts[network] || analysisTexts.ethereum;
+  const analysisIndex = Math.floor(Math.random() * networkTexts.length);
   
   return simulateApiCall({
     trust_score: trustScore,
     developer_score: developerScore,
     liquidity_score: liquidityScore,
-    analysis: analysisTexts[analysisIndex],
+    analysis: networkTexts[analysisIndex],
     timestamp: new Date().toISOString(),
+    network: network
   });
 }
 
 // Blockchain contract interface (simulated)
-export async function checkBlockchainForScore(address: string): Promise<ApiResponse<any>> {
+export async function checkBlockchainForScore(address: string, network: string = 'ethereum'): Promise<ApiResponse<any>> {
   // In a real implementation, this would query a blockchain smart contract
   // For MVP, we'll simulate by checking localStorage
   try {
-    const storedData = localStorage.getItem(`reputex_score_${address}`);
+    const storedData = localStorage.getItem(`reputex_score_${network}_${address}`);
     if (storedData) {
       return { data: JSON.parse(storedData) };
     }
@@ -134,24 +185,29 @@ export async function storeScoreOnBlockchain(address: string, scoreData: any): P
   // In a real implementation, this would store data on a blockchain via smart contract
   // For MVP, we'll simulate by using localStorage
   try {
+    const network = scoreData.network || 'ethereum';
+    
     // Save to localStorage with a timestamp
     const dataToStore = {
       ...scoreData,
       timestamp: new Date().toISOString(),
     };
-    localStorage.setItem(`reputex_score_${address}`, JSON.stringify(dataToStore));
+    localStorage.setItem(`reputex_score_${network}_${address}`, JSON.stringify(dataToStore));
     
     // Add to history
     const historyString = localStorage.getItem('reputex_history') || '[]';
     const history = JSON.parse(historyString);
     
     // Check if address already exists in history
-    const existingIndex = history.findIndex((item: any) => item.address === address);
+    const existingIndex = history.findIndex((item: any) => 
+      item.address === address && item.network === network
+    );
     
     if (existingIndex >= 0) {
       // Update existing entry
       history[existingIndex] = { 
         address, 
+        network,
         trustScore: scoreData.trust_score,
         timestamp: new Date().toISOString() 
       };
@@ -159,6 +215,7 @@ export async function storeScoreOnBlockchain(address: string, scoreData: any): P
       // Add new entry
       history.push({ 
         address, 
+        network,
         trustScore: scoreData.trust_score,
         timestamp: new Date().toISOString() 
       });

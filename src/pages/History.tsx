@@ -67,6 +67,7 @@ const History = () => {
                     address={item.address}
                     trustScore={item.trustScore}
                     timestamp={item.timestamp}
+                    network={item.network || 'ethereum'}
                   />
                 ))}
               </div>
