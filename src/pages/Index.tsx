@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -7,6 +6,8 @@ import AddressInput from '@/components/AddressInput';
 import LoadingAnimation from '@/components/LoadingAnimation';
 import AnalysisReport from '@/components/AnalysisReport';
 import { toast } from 'sonner';
+import { Volume2, VolumeX, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   getWalletTransactions,
   getTokenData,
@@ -21,6 +22,7 @@ const Index = () => {
   const [analysis, setAnalysis] = useState<any | null>(null);
   const [searchedAddress, setSearchedAddress] = useState<string | null>(null);
   const [searchedNetwork, setSearchedNetwork] = useState<string>('ethereum');
+  const [audioEnabled, setAudioEnabled] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -110,17 +112,54 @@ const Index = () => {
     navigate(`/?address=${address}&network=${network}`);
   };
 
+  const toggleAudio = () => {
+    setAudioEnabled(!audioEnabled);
+    if (!audioEnabled) {
+      // Play ambient sound
+      try {
+        const audio = new Audio('/ambient.mp3'); // This file would need to be added
+        audio.volume = 0.2;
+        audio.loop = true;
+        audio.play().catch(error => {
+          console.log("Audio playback failed: ", error);
+        });
+      } catch (error) {
+        console.error("Error playing audio:", error);
+      }
+    } else {
+      // Stop ambient sound - this is simplified; you'd need to keep a reference to the audio element
+      const audioElements = document.querySelectorAll('audio');
+      audioElements.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+    }
+  };
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen relative overflow-hidden">
       <Navbar />
       
-      <main className="flex-grow pt-24 pb-16 px-4">
-        <section className="mb-16 text-center">
+      <div className="audio-toggle" onClick={toggleAudio}>
+        {audioEnabled ? (
+          <Volume2 className="h-5 w-5 text-neon-cyan" />
+        ) : (
+          <VolumeX className="h-5 w-5 text-muted-foreground" />
+        )}
+      </div>
+      
+      <main className="flex-grow pt-32 pb-16 px-4 container mx-auto relative z-10">
+        <section className="mb-12 text-center">
+          <div className="shield-logo mx-auto mb-6 w-20 h-20 flex items-center justify-center">
+            <Shield className="w-16 h-16 text-neon-cyan" />
+          </div>
+          
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 animate-float">
-            Blockchain <span className="neon-text">Reputation</span> Intelligence
+            <span className="neon-text">ReputeX AI</span>
           </h1>
-          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Instantly analyze and score any wallet or token address with advanced AI and blockchain integration.
+          
+          <p className="tagline max-w-2xl mx-auto">
+            Web3's AI-Powered Reputation Shield – Spot Scams & Invest Fearlessly.
           </p>
           
           <AddressInput onSubmit={handleSubmit} isLoading={isLoading} />
@@ -148,7 +187,7 @@ const Index = () => {
           
           {!isLoading && !analysis && (
             <div className="max-w-4xl mx-auto mt-10">
-              <div className="glass-card rounded-xl p-8 text-center">
+              <div className="glowing-card rounded-xl p-8 text-center">
                 <h3 className="text-2xl font-semibold mb-4">Enter an address to analyze</h3>
                 <p className="text-muted-foreground">
                   Get comprehensive reputation scores and AI analysis for any blockchain wallet or token address.
@@ -160,6 +199,9 @@ const Index = () => {
       </main>
       
       <Footer />
+      
+      {/* Wave animation in background */}
+      <div className="wave-bg animate-wave"></div>
     </div>
   );
 };

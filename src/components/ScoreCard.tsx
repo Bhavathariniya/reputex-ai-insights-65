@@ -38,51 +38,51 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ title, score, type, description }
     switch (type) {
       case 'trust':
         return scoreLevel === ScoreLevel.HIGH ? (
-          <ShieldCheck className="h-6 w-6 text-neon-pink" />
+          <ShieldCheck className="h-6 w-6 text-neon-cyan" />
         ) : scoreLevel === ScoreLevel.MEDIUM ? (
-          <Shield className="h-6 w-6 text-neon-orange" />
+          <Shield className="h-6 w-6 text-neon-purple" />
         ) : (
-          <ShieldX className="h-6 w-6 text-neon-red" />
+          <ShieldX className="h-6 w-6 text-neon-pink" />
         );
       
       case 'developer':
-        return <Code className="h-6 w-6 text-neon-purple" />;
+        return <Code className="h-6 w-6 text-neon-blue" />;
       
       case 'liquidity':
         return scoreLevel === ScoreLevel.HIGH ? (
-          <TrendingUp className="h-6 w-6 text-neon-pink" />
+          <TrendingUp className="h-6 w-6 text-neon-cyan" />
         ) : (
-          <BarChart3 className="h-6 w-6 text-neon-orange" />
+          <BarChart3 className="h-6 w-6 text-neon-purple" />
         );
       
       case 'community':
-        return <Users className="h-6 w-6 text-neon-pink" />;
+        return <Users className="h-6 w-6 text-neon-blue" />;
         
       case 'holders':
-        return <BarChart2 className="h-6 w-6 text-neon-yellow" />;
+        return <BarChart2 className="h-6 w-6 text-neon-cyan" />;
         
       case 'fraud':
         return scoreLevel === ScoreLevel.HIGH ? (
-          <ShieldCheck className="h-6 w-6 text-neon-pink" />
+          <ShieldCheck className="h-6 w-6 text-neon-cyan" />
         ) : scoreLevel === ScoreLevel.MEDIUM ? (
-          <AlertTriangle className="h-6 w-6 text-neon-orange" />
+          <AlertTriangle className="h-6 w-6 text-neon-purple" />
         ) : (
-          <AlertTriangle className="h-6 w-6 text-neon-red" />
+          <AlertTriangle className="h-6 w-6 text-neon-pink" />
         );
         
       default:
-        return <AlertTriangle className="h-6 w-6 text-neon-yellow" />;
+        return <AlertTriangle className="h-6 w-6 text-neon-purple" />;
     }
   };
 
   return (
-    <div className="glass-card rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+    <div className="glowing-card rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02]">
       <div className={`h-1 bg-gradient-to-r ${
         scoreLevel === ScoreLevel.HIGH
-          ? 'from-neon-pink to-neon-purple'
+          ? 'from-neon-cyan to-neon-blue'
           : scoreLevel === ScoreLevel.MEDIUM
-          ? 'from-neon-orange to-neon-red'
-          : 'from-neon-yellow to-neon-orange'
+          ? 'from-neon-purple to-neon-blue'
+          : 'from-neon-pink to-neon-violet'
       }`}></div>
       
       <div className="p-6">

@@ -54,12 +54,11 @@ export default {
           foreground: 'hsl(var(--card-foreground))'
         },
         neon: {
-          yellow: '#FFCB13',
-          orange: '#FF8630',
-          red: '#FF414D',
-          pink: '#E31366',
-          purple: '#9B116F',
-          deepPurple: '#491079',
+          pink: '#FF00FF',
+          purple: '#8A2BE2',
+          cyan: '#00FFFF',
+          blue: '#2E8BFF',
+          violet: '#4B0082',
         },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
@@ -91,10 +90,10 @@ export default {
         },
         'pulse-glow': {
           '0%, 100%': { 
-            boxShadow: '0 0 10px rgba(227, 19, 102, 0.7), 0 0 20px rgba(227, 19, 102, 0.5)' 
+            boxShadow: '0 0 10px rgba(255, 0, 255, 0.7), 0 0 20px rgba(0, 255, 255, 0.5)' 
           },
           '50%': { 
-            boxShadow: '0 0 15px rgba(227, 19, 102, 0.9), 0 0 30px rgba(227, 19, 102, 0.7)' 
+            boxShadow: '0 0 15px rgba(138, 43, 226, 0.9), 0 0 30px rgba(46, 139, 255, 0.7)' 
           }
         },
         'float': {
@@ -110,6 +109,11 @@ export default {
           '0%': { width: '0%' },
           '100%': { width: 'var(--score-percentage)' }
         },
+        'wave': {
+          '0%': { transform: 'translateX(0) translateZ(0) scaleY(1)' },
+          '50%': { transform: 'translateX(-25%) translateZ(0) scaleY(0.55)' },
+          '100%': { transform: 'translateX(-50%) translateZ(0) scaleY(1)' }
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -118,10 +122,11 @@ export default {
         'float': 'float 3s ease-in-out infinite',
         'gradient-shift': 'gradient-shift 5s ease infinite',
         'score-fill': 'score-fill 1.5s ease-out forwards',
+        'wave': 'wave 15s -3s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite'
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'neon-gradient': 'linear-gradient(90deg, #FFCB13, #FF8630, #FF414D, #E31366, #9B116F, #491079)',
+        'neon-gradient': 'linear-gradient(90deg, #FF00FF, #8A2BE2, #00FFFF, #2E8BFF, #4B0082)',
       }
     }
   },
