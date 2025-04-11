@@ -14,8 +14,8 @@ interface Particle {
 const NeonParticlesBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
-  // Neon color palette
-  const colors = ['#FFCB13', '#FF8630', '#FF414D', '#E31366', '#9B116F', '#491079'];
+  // Neon color palette - matching the existing color palette from the app
+  const colors = ['#00FFFF', '#FF00FF', '#8A2BE2', '#1E90FF', '#FF1493'];
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,7 +38,7 @@ const NeonParticlesBackground: React.FC = () => {
     
     // Particles array
     const particles: Particle[] = [];
-    const particleCount = 1000;
+    const particleCount = 1500;
     
     // Create particles
     const createParticles = () => {
@@ -58,7 +58,7 @@ const NeonParticlesBackground: React.FC = () => {
     createParticles();
     
     // Animation properties
-    let warpSpeed = 0.5;
+    let warpSpeed = 0.7;
     let centerX = canvas.width / 2;
     let centerY = canvas.height / 2;
     
