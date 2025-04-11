@@ -6,43 +6,43 @@
 
 @layer base {
   :root {
-    --background: 220 70% 5%;
+    --background: 270 60% 3%;
     --foreground: 210 20% 98%;
 
-    --card: 220 50% 7%;
+    --card: 270 50% 5%;
     --card-foreground: 210 20% 98%;
 
-    --popover: 220 45% 8%;
+    --popover: 270 45% 6%;
     --popover-foreground: 210 20% 98%;
 
     --primary: 300 100% 50%; /* Neon Pink */
     --primary-foreground: 210 20% 98%;
 
-    --secondary: 220 75% 50%; /* Electric Blue */
+    --secondary: 270 75% 50%; /* Electric Purple */
     --secondary-foreground: 210 20% 98%;
 
-    --muted: 220 40% 12%;
+    --muted: 270 40% 10%;
     --muted-foreground: 215 20% 65%;
 
     --accent: 180 100% 50%; /* Cyan Blue */
-    --accent-foreground: 220 60% 10%;
+    --accent-foreground: 270 60% 10%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 220 40% 20%;
-    --input: 220 45% 15%;
+    --border: 270 40% 20%;
+    --input: 270 45% 15%;
     --ring: 300 100% 50%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 220 50% 7%;
+    --sidebar-background: 270 50% 5%;
     --sidebar-foreground: 210 20% 98%;
     --sidebar-primary: 300 100% 50%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 220 40% 15%;
+    --sidebar-accent: 270 40% 15%;
     --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 220 40% 20%;
+    --sidebar-border: 270 40% 20%;
     --sidebar-ring: 300 100% 50%;
   }
 }
@@ -58,7 +58,175 @@
     overflow-x: hidden;
   }
 
-  /* Rising Light Trails Background */
+  /* New Cyber Grid Background Animation */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -2;
+    background-color: hsl(270, 60%, 3%);
+  }
+  
+  /* Cyber Grid Lines */
+  .cyber-grid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+    background: 
+      linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(255, 0, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    overflow: hidden;
+  }
+  
+  .cyber-grid::before, .cyber-grid::after {
+    content: "";
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    z-index: -1;
+  }
+  
+  /* Horizontal lines */
+  .cyber-grid::before {
+    background: 
+      repeating-linear-gradient(90deg, 
+        rgba(0, 255, 255, 0) 0%, 
+        rgba(0, 255, 255, 0.12) 20%, 
+        rgba(0, 255, 255, 0) 40%
+      );
+    animation: cyber-grid-h 15s linear infinite;
+  }
+  
+  /* Vertical lines */
+  .cyber-grid::after {
+    background: 
+      repeating-linear-gradient(0deg, 
+        rgba(255, 0, 255, 0) 0%, 
+        rgba(255, 0, 255, 0.12) 20%, 
+        rgba(255, 0, 255, 0) 40%
+      );
+    animation: cyber-grid-v 10s linear infinite;
+  }
+  
+  /* Circular Cyber Lines */
+  .cyber-circles {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200vh;
+    height: 200vh;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  .cyber-circle {
+    position: absolute;
+    border-radius: 50%;
+    border-style: solid;
+    opacity: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .cyber-circle:nth-child(1) {
+    width: 20%;
+    height: 20%;
+    border-width: 1px;
+    border-color: rgba(0, 255, 255, 0.3);
+    animation: pulse-circle 8s ease-in-out infinite 0s;
+  }
+  
+  .cyber-circle:nth-child(2) {
+    width: 40%;
+    height: 40%;
+    border-width: 1px;
+    border-color: rgba(255, 0, 255, 0.2);
+    animation: pulse-circle 8s ease-in-out infinite 1s;
+  }
+  
+  .cyber-circle:nth-child(3) {
+    width: 60%;
+    height: 60%;
+    border-width: 1px;
+    border-color: rgba(138, 43, 226, 0.2);
+    animation: pulse-circle 8s ease-in-out infinite 2s;
+  }
+  
+  .cyber-circle:nth-child(4) {
+    width: 80%;
+    height: 80%;
+    border-width: 1px;
+    border-color: rgba(46, 139, 255, 0.2);
+    animation: pulse-circle 8s ease-in-out infinite 3s;
+  }
+  
+  /* Horizontal dots */
+  .cyber-dots {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+  }
+  
+  .cyber-dots::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 10% 10%, rgba(0, 255, 255, 0.05) 1px, transparent 1.5px),
+      radial-gradient(circle at 20% 40%, rgba(255, 0, 255, 0.05) 1px, transparent 1.5px),
+      radial-gradient(circle at 30% 70%, rgba(46, 139, 255, 0.05) 1px, transparent 1.5px),
+      radial-gradient(circle at 40% 30%, rgba(138, 43, 226, 0.05) 1px, transparent 1.5px),
+      radial-gradient(circle at 60% 60%, rgba(0, 255, 255, 0.05) 1px, transparent 1.5px),
+      radial-gradient(circle at 70% 20%, rgba(255, 0, 255, 0.05) 1px, transparent 1.5px),
+      radial-gradient(circle at 80% 90%, rgba(46, 139, 255, 0.05) 1px, transparent 1.5px),
+      radial-gradient(circle at 90% 50%, rgba(138, 43, 226, 0.05) 1px, transparent 1.5px);
+    background-size: 150px 150px;
+    animation: cyber-dots 80s linear infinite alternate;
+  }
+
+  @keyframes cyber-grid-h {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+  }
+  
+  @keyframes cyber-grid-v {
+    0% { transform: translateY(-50%); }
+    100% { transform: translateY(0); }
+  }
+  
+  @keyframes cyber-dots {
+    0% { transform: translateX(0) translateY(0); }
+    100% { transform: translateX(-30px) translateY(-30px); }
+  }
+  
+  @keyframes pulse-circle {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    50% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+    100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+  }
+
+  /* Animated Background */
   body::before {
     content: "";
     position: fixed;
@@ -68,107 +236,48 @@
     height: 100%;
     pointer-events: none;
     z-index: -1;
-    background-color: hsl(220, 70%, 5%);
+    background: 
+      radial-gradient(circle at 15% 50%, rgba(255, 0, 255, 0.08) 0%, transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(138, 43, 226, 0.08) 0%, transparent 25%),
+      linear-gradient(135deg, rgba(45, 0, 75, 0.9) 0%, rgba(20, 0, 50, 0.95) 100%);
+    animation: backgroundShift 15s ease infinite alternate;
   }
 
-  /* Vertical Light Trails */
-  @keyframes riseUp {
+  /* Moving Gradient Animation */
+  @keyframes backgroundShift {
     0% {
-      transform: translateY(100vh);
-      opacity: 0;
-    }
-    10% {
-      opacity: 0.8;
-    }
-    80% {
-      opacity: 0.8;
+      background-position: 0% 0%;
     }
     100% {
-      transform: translateY(-20vh);
-      opacity: 0;
+      background-position: 100% 100%;
     }
   }
 
-  /* Blue particles with glow effect */
-  @keyframes floatParticle {
-    0% {
-      transform: translate(0, 100vh) scale(0.5);
-      opacity: 0;
-    }
-    20% {
-      opacity: 0.7;
-    }
-    80% {
-      opacity: 0.7;
-    }
-    100% {
-      transform: translate(var(--particle-x), -20vh) scale(0.8);
-      opacity: 0;
-    }
-  }
-
-  /* Create the light trails */
-  .light-trails {
+  /* Floating Particles */
+  body::after {
+    content: "";
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    pointer-events: none;
     z-index: -1;
-    overflow: hidden;
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(0, 255, 255, 0.05) 1%, transparent 5%),
+      radial-gradient(circle at 75% 75%, rgba(46, 139, 255, 0.05) 1%, transparent 5%),
+      radial-gradient(circle at 50% 50%, rgba(255, 0, 255, 0.05) 1%, transparent 5%),
+      radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.05) 1%, transparent 5%);
+    background-size: 250% 250%;
+    animation: particleFloat 20s ease infinite;
   }
 
-  .light-trails .trail {
-    position: absolute;
-    bottom: -20px;
-    width: 2px;
-    height: 120px;
-    background: linear-gradient(to top, rgba(41, 121, 255, 0), rgba(41, 121, 255, 1));
-    animation: riseUp 8s linear infinite;
-    box-shadow: 0 0 8px 1px rgba(41, 121, 255, 0.7);
-  }
-
-  .light-trails .particle {
-    position: absolute;
-    bottom: -10px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: rgba(41, 121, 255, 0.8);
-    animation: floatParticle 15s ease-out infinite;
-    box-shadow: 0 0 12px 4px rgba(41, 121, 255, 0.5);
-  }
-
-  .light-trails .trail:nth-child(3n+1) {
-    background: linear-gradient(to top, rgba(0, 157, 255, 0), rgba(0, 157, 255, 1));
-    box-shadow: 0 0 10px 1px rgba(0, 157, 255, 0.6);
-    height: 180px;
-    width: 1.5px;
-    animation-duration: 10s;
-  }
-
-  .light-trails .trail:nth-child(3n+2) {
-    background: linear-gradient(to top, rgba(0, 200, 255, 0), rgba(0, 200, 255, 1));
-    box-shadow: 0 0 12px 1px rgba(0, 200, 255, 0.5);
-    height: 150px;
-    width: 1px;
-    animation-duration: 12s;
-  }
-
-  .light-trails .particle:nth-child(3n+1) {
-    background-color: rgba(0, 157, 255, 0.8);
-    box-shadow: 0 0 15px 4px rgba(0, 157, 255, 0.6);
-    animation-duration: 13s;
-    width: 5px;
-    height: 5px;
-  }
-
-  .light-trails .particle:nth-child(3n+2) {
-    background-color: rgba(0, 200, 255, 0.8);
-    box-shadow: 0 0 15px 5px rgba(0, 200, 255, 0.5);
-    animation-duration: 17s;
-    width: 4px;
-    height: 4px;
+  @keyframes particleFloat {
+    0% { background-position: 0% 0%; }
+    25% { background-position: 100% 0%; }
+    50% { background-position: 100% 100%; }
+    75% { background-position: 0% 100%; }
+    100% { background-position: 0% 0%; }
   }
 
   ::-webkit-scrollbar {
