@@ -40,13 +40,13 @@ const HistoryItem: React.FC<HistoryItemProps> = ({
         
         <Badge 
           variant="outline" 
-          className={`${networkInfo.color} flex items-center gap-1`}
+          className={`${networkInfo.color} flex items-center gap-1 transition-all duration-300 hover:shadow-[0_0_6px_1px_currentColor]`}
         >
           <BlockchainIcon chain={network} size={12} />
           {networkInfo.name}
         </Badge>
         
-        <Badge variant="outline" className={`${scoreColor} text-xs px-2 py-0.5`}>
+        <Badge variant="outline" className={`${scoreColor} text-xs px-2 py-0.5 transition-all duration-300 hover:shadow-[0_0_6px_1px_currentColor]`}>
           Score: {trustScore}
         </Badge>
         

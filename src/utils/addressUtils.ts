@@ -123,19 +123,20 @@ export interface NetworkInfo {
   icon: string; // Icon identifier or name
 }
 
+// Reordered networks according to the requested priority
 export const networks: NetworkInfo[] = [
+  { id: 'bitcoin', name: 'Bitcoin', color: 'border-[#F7931A] bg-[#F7931A]/10 text-[#F7931A]', icon: 'bitcoin' },
+  { id: 'l1x', name: 'L1X', color: 'border-[#FF00FF] bg-[#FF00FF]/10 text-[#FF00FF]', icon: 'l1x' },
   { id: 'ethereum', name: 'Ethereum', color: 'border-[#627EEA] bg-[#627EEA]/10 text-[#627EEA]', icon: 'ethereum' },
   { id: 'binance', name: 'BNB Chain', color: 'border-[#F3BA2F] bg-[#F3BA2F]/10 text-[#F3BA2F]', icon: 'binance' },
   { id: 'polygon', name: 'Polygon', color: 'border-[#8247E5] bg-[#8247E5]/10 text-[#8247E5]', icon: 'polygon' },
   { id: 'arbitrum', name: 'Arbitrum', color: 'border-[#28A0F0] bg-[#28A0F0]/10 text-[#28A0F0]', icon: 'arbitrum' },
   { id: 'optimism', name: 'Optimism', color: 'border-[#FF0420] bg-[#FF0420]/10 text-[#FF0420]', icon: 'optimism' },
-  { id: 'bitcoin', name: 'Bitcoin', color: 'border-[#F7931A] bg-[#F7931A]/10 text-[#F7931A]', icon: 'bitcoin' },
   { id: 'solana', name: 'Solana', color: 'border-[#00FFA3] bg-[#00FFA3]/10 text-[#00FFA3]', icon: 'solana' },
   { id: 'avalanche', name: 'Avalanche', color: 'border-[#E84142] bg-[#E84142]/10 text-[#E84142]', icon: 'avalanche' },
   { id: 'fantom', name: 'Fantom', color: 'border-[#1969FF] bg-[#1969FF]/10 text-[#1969FF]', icon: 'fantom' },
   { id: 'base', name: 'Base', color: 'border-[#0052FF] bg-[#0052FF]/10 text-[#0052FF]', icon: 'base' },
-  { id: 'zksync', name: 'zkSync', color: 'border-[#8C8DFC] bg-[#8C8DFC]/10 text-[#8C8DFC]', icon: 'zksync' },
-  { id: 'l1x', name: 'L1X', color: 'border-[#FF00FF] bg-[#FF00FF]/10 text-[#FF00FF]', icon: 'l1x' }
+  { id: 'zksync', name: 'zkSync', color: 'border-[#8C8DFC] bg-[#8C8DFC]/10 text-[#8C8DFC]', icon: 'zksync' }
 ];
 
 // Get network information by id

@@ -91,7 +91,7 @@ const AddressInput: React.FC<AddressInputProps> = ({ onSubmit, isLoading }) => {
             <Badge
               key={net.id}
               variant="outline"
-              className={`cursor-pointer flex items-center gap-1 ${network === net.id ? net.color : 'opacity-50'}`}
+              className={`cursor-pointer flex items-center gap-1 transition-all duration-300 hover:shadow-[0_0_8px_2px] hover:shadow-[${net.id === 'bitcoin' ? '#F7931A' : net.id === 'l1x' ? '#FF00FF' : net.id === 'ethereum' ? '#627EEA' : net.id === 'binance' ? '#F3BA2F' : net.id === 'polygon' ? '#8247E5' : net.id === 'arbitrum' ? '#28A0F0' : net.id === 'optimism' ? '#FF0420' : net.id === 'solana' ? '#00FFA3' : net.id === 'avalanche' ? '#E84142' : net.id === 'fantom' ? '#1969FF' : net.id === 'base' ? '#0052FF' : '#8C8DFC'}] ${network === net.id ? net.color : 'opacity-50'}`}
               onClick={() => setNetwork(net.id)}
             >
               <BlockchainIcon chain={net.id} size={12} />
