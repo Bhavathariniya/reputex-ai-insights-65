@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -7,43 +6,43 @@
 
 @layer base {
   :root {
-    --background: 270 60% 3%;
+    --background: 220 70% 5%;
     --foreground: 210 20% 98%;
 
-    --card: 270 50% 5%;
+    --card: 220 50% 7%;
     --card-foreground: 210 20% 98%;
 
-    --popover: 270 45% 6%;
+    --popover: 220 45% 8%;
     --popover-foreground: 210 20% 98%;
 
     --primary: 300 100% 50%; /* Neon Pink */
     --primary-foreground: 210 20% 98%;
 
-    --secondary: 270 75% 50%; /* Electric Purple */
+    --secondary: 220 75% 50%; /* Electric Blue */
     --secondary-foreground: 210 20% 98%;
 
-    --muted: 270 40% 10%;
+    --muted: 220 40% 12%;
     --muted-foreground: 215 20% 65%;
 
     --accent: 180 100% 50%; /* Cyan Blue */
-    --accent-foreground: 270 60% 10%;
+    --accent-foreground: 220 60% 10%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 270 40% 20%;
-    --input: 270 45% 15%;
+    --border: 220 40% 20%;
+    --input: 220 45% 15%;
     --ring: 300 100% 50%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 270 50% 5%;
+    --sidebar-background: 220 50% 7%;
     --sidebar-foreground: 210 20% 98%;
     --sidebar-primary: 300 100% 50%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 270 40% 15%;
+    --sidebar-accent: 220 40% 15%;
     --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 270 40% 20%;
+    --sidebar-border: 220 40% 20%;
     --sidebar-ring: 300 100% 50%;
   }
 }
@@ -59,7 +58,7 @@
     overflow-x: hidden;
   }
 
-  /* Animated Background */
+  /* Rising Light Trails Background */
   body::before {
     content: "";
     position: fixed;
@@ -69,48 +68,107 @@
     height: 100%;
     pointer-events: none;
     z-index: -1;
-    background: 
-      radial-gradient(circle at 15% 50%, rgba(255, 0, 255, 0.08) 0%, transparent 25%),
-      radial-gradient(circle at 85% 30%, rgba(138, 43, 226, 0.08) 0%, transparent 25%),
-      linear-gradient(135deg, rgba(45, 0, 75, 0.9) 0%, rgba(20, 0, 50, 0.95) 100%);
-    animation: backgroundShift 15s ease infinite alternate;
+    background-color: hsl(220, 70%, 5%);
   }
 
-  /* Moving Gradient Animation */
-  @keyframes backgroundShift {
+  /* Vertical Light Trails */
+  @keyframes riseUp {
     0% {
-      background-position: 0% 0%;
+      transform: translateY(100vh);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.8;
+    }
+    80% {
+      opacity: 0.8;
     }
     100% {
-      background-position: 100% 100%;
+      transform: translateY(-20vh);
+      opacity: 0;
     }
   }
 
-  /* Floating Particles */
-  body::after {
-    content: "";
+  /* Blue particles with glow effect */
+  @keyframes floatParticle {
+    0% {
+      transform: translate(0, 100vh) scale(0.5);
+      opacity: 0;
+    }
+    20% {
+      opacity: 0.7;
+    }
+    80% {
+      opacity: 0.7;
+    }
+    100% {
+      transform: translate(var(--particle-x), -20vh) scale(0.8);
+      opacity: 0;
+    }
+  }
+
+  /* Create the light trails */
+  .light-trails {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
     z-index: -1;
-    background-image: 
-      radial-gradient(circle at 25% 25%, rgba(0, 255, 255, 0.05) 1%, transparent 5%),
-      radial-gradient(circle at 75% 75%, rgba(46, 139, 255, 0.05) 1%, transparent 5%),
-      radial-gradient(circle at 50% 50%, rgba(255, 0, 255, 0.05) 1%, transparent 5%),
-      radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.05) 1%, transparent 5%);
-    background-size: 250% 250%;
-    animation: particleFloat 20s ease infinite;
+    overflow: hidden;
   }
 
-  @keyframes particleFloat {
-    0% { background-position: 0% 0%; }
-    25% { background-position: 100% 0%; }
-    50% { background-position: 100% 100%; }
-    75% { background-position: 0% 100%; }
-    100% { background-position: 0% 0%; }
+  .light-trails .trail {
+    position: absolute;
+    bottom: -20px;
+    width: 2px;
+    height: 120px;
+    background: linear-gradient(to top, rgba(41, 121, 255, 0), rgba(41, 121, 255, 1));
+    animation: riseUp 8s linear infinite;
+    box-shadow: 0 0 8px 1px rgba(41, 121, 255, 0.7);
+  }
+
+  .light-trails .particle {
+    position: absolute;
+    bottom: -10px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: rgba(41, 121, 255, 0.8);
+    animation: floatParticle 15s ease-out infinite;
+    box-shadow: 0 0 12px 4px rgba(41, 121, 255, 0.5);
+  }
+
+  .light-trails .trail:nth-child(3n+1) {
+    background: linear-gradient(to top, rgba(0, 157, 255, 0), rgba(0, 157, 255, 1));
+    box-shadow: 0 0 10px 1px rgba(0, 157, 255, 0.6);
+    height: 180px;
+    width: 1.5px;
+    animation-duration: 10s;
+  }
+
+  .light-trails .trail:nth-child(3n+2) {
+    background: linear-gradient(to top, rgba(0, 200, 255, 0), rgba(0, 200, 255, 1));
+    box-shadow: 0 0 12px 1px rgba(0, 200, 255, 0.5);
+    height: 150px;
+    width: 1px;
+    animation-duration: 12s;
+  }
+
+  .light-trails .particle:nth-child(3n+1) {
+    background-color: rgba(0, 157, 255, 0.8);
+    box-shadow: 0 0 15px 4px rgba(0, 157, 255, 0.6);
+    animation-duration: 13s;
+    width: 5px;
+    height: 5px;
+  }
+
+  .light-trails .particle:nth-child(3n+2) {
+    background-color: rgba(0, 200, 255, 0.8);
+    box-shadow: 0 0 15px 5px rgba(0, 200, 255, 0.5);
+    animation-duration: 17s;
+    width: 4px;
+    height: 4px;
   }
 
   ::-webkit-scrollbar {

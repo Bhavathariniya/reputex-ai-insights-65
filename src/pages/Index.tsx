@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -7,7 +8,6 @@ import LoadingAnimation from '@/components/LoadingAnimation';
 import AnalysisReport from '@/components/AnalysisReport';
 import { toast } from 'sonner';
 import { Volume2, VolumeX, Shield } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
   getWalletTransactions,
   getTokenData,
@@ -23,8 +23,37 @@ const Index = () => {
   const [searchedAddress, setSearchedAddress] = useState<string | null>(null);
   const [searchedNetwork, setSearchedNetwork] = useState<string>('ethereum');
   const [audioEnabled, setAudioEnabled] = useState<boolean>(false);
+  const [lightTrails, setLightTrails] = useState<Array<{id: number, left: number, delay: number, type: string}>>([]);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Generate light trails on component mount
+  useEffect(() => {
+    const trails = [];
+    const particles = [];
+    
+    // Generate trails
+    for (let i = 0; i < 40; i++) {
+      trails.push({
+        id: i,
+        left: Math.random() * 100,
+        delay: Math.random() * 5,
+        type: 'trail'
+      });
+    }
+    
+    // Generate particles
+    for (let i = 0; i < 25; i++) {
+      particles.push({
+        id: i + 100,
+        left: Math.random() * 100,
+        delay: Math.random() * 5,
+        type: 'particle'
+      });
+    }
+    
+    setLightTrails([...trails, ...particles]);
+  }, []);
 
   // Check for address in URL query params
   useEffect(() => {
@@ -140,6 +169,21 @@ const Index = () => {
     <div className="flex flex-col min-h-screen relative overflow-hidden">
       <Navbar />
       
+      {/* Light Trails Background */}
+      <div className="light-trails">
+        {lightTrails.map(item => (
+          <div
+            key={item.id}
+            className={item.type}
+            style={{
+              left: `${item.left}%`,
+              animationDelay: `${item.delay}s`,
+              ...(item.type === 'particle' ? {'--particle-x': `${(Math.random() * 40) - 20}px`} : {})
+            }}
+          />
+        ))}
+      </div>
+      
       <div className="audio-toggle" onClick={toggleAudio}>
         {audioEnabled ? (
           <Volume2 className="h-5 w-5 text-neon-cyan" />
@@ -199,9 +243,6 @@ const Index = () => {
       </main>
       
       <Footer />
-      
-      {/* Wave animation in background */}
-      <div className="wave-bg animate-wave"></div>
     </div>
   );
 };
