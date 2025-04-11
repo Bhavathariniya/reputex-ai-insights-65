@@ -179,6 +179,109 @@
     }
   }
 
+  /* Shield animation styles */
+  .shield-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .shield-glow {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(10, 10, 25, 0.5);
+    box-shadow: 
+      0 0 15px rgba(0, 255, 255, 0.5),
+      0 0 25px rgba(138, 43, 226, 0.3),
+      0 0 35px rgba(255, 0, 255, 0.2);
+    animation: shield-pulse 3s ease-in-out infinite alternate;
+  }
+
+  .shield-icon {
+    color: rgba(0, 255, 255, 0.9);
+    filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.8)) 
+            drop-shadow(0 0 16px rgba(138, 43, 226, 0.4));
+    animation: shield-glow 2s ease-in-out infinite alternate;
+  }
+
+  .shield-pulse-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: transparent;
+    animation: shield-ring-pulse 4s linear infinite;
+  }
+
+  @keyframes shield-pulse {
+    0% {
+      box-shadow: 
+        0 0 15px rgba(0, 255, 255, 0.5),
+        0 0 25px rgba(138, 43, 226, 0.3),
+        0 0 35px rgba(255, 0, 255, 0.2);
+    }
+    100% {
+      box-shadow: 
+        0 0 20px rgba(0, 255, 255, 0.7),
+        0 0 35px rgba(138, 43, 226, 0.5),
+        0 0 50px rgba(255, 0, 255, 0.3);
+    }
+  }
+
+  @keyframes shield-glow {
+    0% {
+      color: rgba(0, 255, 255, 0.9);
+      filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.8)) 
+              drop-shadow(0 0 16px rgba(138, 43, 226, 0.4));
+    }
+    50% {
+      color: rgba(138, 43, 226, 0.9);
+      filter: drop-shadow(0 0 8px rgba(138, 43, 226, 0.8)) 
+              drop-shadow(0 0 16px rgba(0, 255, 255, 0.4));
+    }
+    100% {
+      color: rgba(255, 0, 255, 0.9);
+      filter: drop-shadow(0 0 8px rgba(255, 0, 255, 0.8)) 
+              drop-shadow(0 0 16px rgba(46, 139, 255, 0.4));
+    }
+  }
+
+  @keyframes shield-ring-pulse {
+    0% {
+      width: 120px;
+      height: 120px;
+      border-color: rgba(0, 255, 255, 0.7);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+      opacity: 0.8;
+    }
+    50% {
+      width: 180px;
+      height: 180px;
+      border-color: rgba(138, 43, 226, 0.5);
+      box-shadow: 0 0 25px rgba(138, 43, 226, 0.3);
+      opacity: 0.4;
+    }
+    100% {
+      width: 220px;
+      height: 220px;
+      border-color: rgba(255, 0, 255, 0.3);
+      box-shadow: 0 0 30px rgba(255, 0, 255, 0.1);
+      opacity: 0;
+    }
+  }
+
   /* Wave animation for backgrounds */
   .wave-bg {
     position: absolute;
@@ -260,4 +363,19 @@
 
 .animate-pulse-glow {
   animation: pulse-glow 2s infinite;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out forwards;
 }
