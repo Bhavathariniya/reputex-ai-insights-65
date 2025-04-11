@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ArrowLeft } from 'lucide-react';
+import CyberBackground from '@/components/CyberBackground';
 
 const NotFound = () => {
   const location = useLocation();
@@ -20,6 +21,7 @@ const NotFound = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
+      <CyberBackground />
       
       <main className="flex-grow pt-24 pb-16 px-4 flex items-center justify-center">
         <div className="text-center">
@@ -28,7 +30,7 @@ const NotFound = () => {
             Oops! This page has vanished into the blockchain.
           </p>
           <Link to="/">
-            <Button className="bg-primary hover:bg-primary/80">
+            <Button className="bg-primary hover:bg-primary/80 tech-button">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Return to Home
             </Button>
