@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Mail, MessageSquare, Send } from 'lucide-react';
-import CyberBackground from '@/components/CyberBackground';
 
 const Contact = () => {
   const [name, setName] = useState('');
@@ -40,7 +39,6 @@ const Contact = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <CyberBackground />
       
       <main className="flex-grow pt-24 pb-16 px-4">
         <div className="container mx-auto">
@@ -54,7 +52,7 @@ const Contact = () => {
           </section>
           
           <section className="mb-16 grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl mx-auto">
-            <div className="glass-card tech-card rounded-xl p-8">
+            <div className="glass-card rounded-xl p-8">
               <h2 className="text-2xl font-semibold mb-6 flex items-center">
                 <MessageSquare className="h-5 w-5 mr-2 text-neon-pink" />
                 Send a Message
@@ -97,7 +95,7 @@ const Contact = () => {
                 
                 <Button 
                   type="submit" 
-                  className="w-full tech-button" 
+                  className="w-full" 
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -115,7 +113,7 @@ const Contact = () => {
               </form>
             </div>
             
-            <div className="glass-card tech-card rounded-xl p-8">
+            <div className="glass-card rounded-xl p-8">
               <h2 className="text-2xl font-semibold mb-6 flex items-center">
                 <Mail className="h-5 w-5 mr-2 text-neon-orange" />
                 Connect With Us
@@ -131,13 +129,13 @@ const Contact = () => {
                   <h3 className="text-lg font-medium mb-2">Social Media</h3>
                   <p className="text-muted-foreground mb-2">Follow us for updates and announcements:</p>
                   <div className="flex space-x-4">
-                    <a href="#" className="cyber-link text-muted-foreground hover:text-foreground transition-colors">
+                    <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                       Twitter
                     </a>
-                    <a href="#" className="cyber-link text-muted-foreground hover:text-foreground transition-colors">
+                    <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                       Telegram
                     </a>
-                    <a href="#" className="cyber-link text-muted-foreground hover:text-foreground transition-colors">
+                    <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                       Discord
                     </a>
                   </div>
@@ -159,7 +157,7 @@ const Contact = () => {
               Stay updated with the latest features and improvements to ReputexAI by joining our growing community.
             </p>
             
-            <Button variant="outline" className="tech-button border-primary text-primary hover:bg-primary/10">
+            <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
               Subscribe to Newsletter
             </Button>
           </section>
