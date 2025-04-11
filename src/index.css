@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -70,16 +69,12 @@
     pointer-events: none;
     z-index: -1;
     background-color: hsl(220, 70%, 5%);
-    background-image: 
-      radial-gradient(circle at 10% 20%, rgba(0, 157, 255, 0.03) 0%, transparent 20%),
-      radial-gradient(circle at 90% 80%, rgba(41, 121, 255, 0.03) 0%, transparent 20%),
-      radial-gradient(circle at 50% 50%, rgba(0, 200, 255, 0.02) 0%, transparent 30%);
   }
 
   /* Vertical Light Trails */
   @keyframes riseUp {
     0% {
-      transform: translateY(120vh);
+      transform: translateY(100vh);
       opacity: 0;
     }
     10% {
@@ -94,10 +89,10 @@
     }
   }
 
-  /* Enhanced Blue particles with stronger glow effect */
+  /* Blue particles with glow effect */
   @keyframes floatParticle {
     0% {
-      transform: translate(0, 120vh) scale(0.5);
+      transform: translate(0, 100vh) scale(0.5);
       opacity: 0;
     }
     20% {
@@ -112,7 +107,7 @@
     }
   }
 
-  /* Create the enhanced light trails */
+  /* Create the light trails */
   .light-trails {
     position: fixed;
     top: 0;
@@ -127,10 +122,10 @@
     position: absolute;
     bottom: -20px;
     width: 2px;
-    height: 180px;
+    height: 120px;
     background: linear-gradient(to top, rgba(41, 121, 255, 0), rgba(41, 121, 255, 1));
-    animation: riseUp 12s linear infinite;
-    box-shadow: 0 0 12px 2px rgba(41, 121, 255, 0.7);
+    animation: riseUp 8s linear infinite;
+    box-shadow: 0 0 8px 1px rgba(41, 121, 255, 0.7);
   }
 
   .light-trails .particle {
@@ -141,128 +136,39 @@
     border-radius: 50%;
     background-color: rgba(41, 121, 255, 0.8);
     animation: floatParticle 15s ease-out infinite;
-    box-shadow: 0 0 18px 6px rgba(41, 121, 255, 0.5);
+    box-shadow: 0 0 12px 4px rgba(41, 121, 255, 0.5);
   }
 
-  /* Enhanced trail variations */
   .light-trails .trail:nth-child(3n+1) {
     background: linear-gradient(to top, rgba(0, 157, 255, 0), rgba(0, 157, 255, 1));
-    box-shadow: 0 0 14px 2px rgba(0, 157, 255, 0.6);
-    height: 220px;
+    box-shadow: 0 0 10px 1px rgba(0, 157, 255, 0.6);
+    height: 180px;
     width: 1.5px;
-    animation-duration: 14s;
+    animation-duration: 10s;
   }
 
   .light-trails .trail:nth-child(3n+2) {
     background: linear-gradient(to top, rgba(0, 200, 255, 0), rgba(0, 200, 255, 1));
-    box-shadow: 0 0 16px 2px rgba(0, 200, 255, 0.5);
-    height: 190px;
-    width: 1.2px;
-    animation-duration: 16s;
+    box-shadow: 0 0 12px 1px rgba(0, 200, 255, 0.5);
+    height: 150px;
+    width: 1px;
+    animation-duration: 12s;
   }
 
-  /* Enhanced particle variations */
   .light-trails .particle:nth-child(3n+1) {
     background-color: rgba(0, 157, 255, 0.8);
-    box-shadow: 0 0 20px 6px rgba(0, 157, 255, 0.6);
-    animation-duration: 17s;
+    box-shadow: 0 0 15px 4px rgba(0, 157, 255, 0.6);
+    animation-duration: 13s;
     width: 5px;
     height: 5px;
   }
 
   .light-trails .particle:nth-child(3n+2) {
     background-color: rgba(0, 200, 255, 0.8);
-    box-shadow: 0 0 22px 7px rgba(0, 200, 255, 0.5);
-    animation-duration: 21s;
+    box-shadow: 0 0 15px 5px rgba(0, 200, 255, 0.5);
+    animation-duration: 17s;
     width: 4px;
     height: 4px;
-  }
-
-  /* Data node effect */
-  .light-trails .node {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background-color: rgba(0, 200, 255, 0.9);
-    box-shadow: 0 0 15px 5px rgba(0, 200, 255, 0.6);
-    opacity: 0;
-    animation: nodeFlash 8s ease-out infinite;
-  }
-
-  @keyframes nodeFlash {
-    0% {
-      transform: scale(0.5);
-      opacity: 0;
-    }
-    10% {
-      transform: scale(1.2);
-      opacity: 0.8;
-    }
-    20% {
-      transform: scale(1);
-      opacity: 0.5;
-    }
-    40% {
-      transform: scale(1.1);
-      opacity: 0.7;
-    }
-    50% {
-      transform: scale(1);
-      opacity: 0.3;
-    }
-    100% {
-      transform: scale(0.5);
-      opacity: 0;
-    }
-  }
-
-  /* Grid pattern overlay */
-  .cyber-grid {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: linear-gradient(rgba(0, 157, 255, 0.03) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(0, 157, 255, 0.03) 1px, transparent 1px);
-    background-size: 20px 20px;
-    z-index: -1;
-    opacity: 0.4;
-    pointer-events: none;
-  }
-
-  /* Horizontal data lines */
-  .data-line {
-    position: fixed;
-    height: 1px;
-    width: 100%;
-    background: linear-gradient(90deg, 
-      transparent 0%, 
-      rgba(0, 157, 255, 0.1) 20%, 
-      rgba(0, 157, 255, 0.3) 50%,
-      rgba(0, 157, 255, 0.1) 80%, 
-      transparent 100%);
-    animation: scanLine 15s linear infinite;
-    opacity: 0;
-    z-index: -1;
-  }
-
-  @keyframes scanLine {
-    0% {
-      opacity: 0;
-      transform: translateY(120vh);
-    }
-    5% {
-      opacity: 0.7;
-    }
-    80% {
-      opacity: 0.7;
-    }
-    100% {
-      opacity: 0;
-      transform: translateY(-5vh);
-    }
   }
 
   ::-webkit-scrollbar {
@@ -284,30 +190,8 @@
 }
 
 @layer components {
-  /* Smart glass effect for cards */
   .glass-card {
-    @apply bg-card/80 backdrop-blur-md border border-white/10;
-    box-shadow: 0 8px 32px 0 rgba(0, 157, 255, 0.1);
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-  
-  /* Enhanced glass card with interactive edges */
-  .glass-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(0, 200, 255, 0.2), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  
-  .glass-card:hover::after {
-    opacity: 1;
+    @apply bg-card/80 backdrop-blur-md border border-white/10 shadow-lg;
   }
   
   .neon-border {
@@ -347,30 +231,13 @@
   }
 
   .glowing-card {
-    @apply bg-card/90 backdrop-blur-md border border-white/10;
-    box-shadow: 0 0 20px rgba(0, 157, 255, 0.15);
-    position: relative;
+    @apply bg-card/90 backdrop-blur-md border border-white/10 shadow-lg;
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.2);
     transition: all 0.3s ease;
-    overflow: hidden;
   }
   
   .glowing-card:hover {
-    box-shadow: 0 0 30px rgba(0, 200, 255, 0.25);
-  }
-  
-  /* Tech border animation */
-  .glowing-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border: 1px solid rgba(0, 157, 255, 0.1);
-    border-radius: inherit;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  
-  .glowing-card:hover::after {
-    opacity: 1;
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
   }
 
   .score-bar {
@@ -422,75 +289,28 @@
     background-size: cover;
     z-index: -1;
   }
-  
-  /* Tech UI Components */
-  .tech-card {
-    @apply glass-card rounded-lg relative;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .tech-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0, 157, 255, 0.2);
-  }
-  
-  /* Data visualization elements */
-  .data-point {
-    @apply w-2 h-2 rounded-full bg-neon-cyan;
-    box-shadow: 0 0 8px rgba(0, 157, 255, 0.8);
-    position: relative;
-  }
-  
-  /* Tech corners */
-  .tech-corners {
-    position: relative;
-  }
-  
-  .tech-corners::before,
-  .tech-corners::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border-color: #00FFFF;
-  }
-  
-  .tech-corners::before {
-    top: 0;
-    left: 0;
-    border-top: 1px solid;
-    border-left: 1px solid;
-  }
-  
-  .tech-corners::after {
-    bottom: 0;
-    right: 0;
-    border-bottom: 1px solid;
-    border-right: 1px solid;
-  }
 }
 
 /* Tagline styling */
 .tagline {
   @apply text-lg md:text-xl font-medium text-center mb-8 relative;
-  text-shadow: 0 0 10px rgba(0, 157, 255, 0.5);
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
   transition: all 0.3s ease;
-  position: relative;
 }
 
 .tagline:hover {
-  text-shadow: 0 0 15px rgba(0, 200, 255, 0.7);
+  text-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
 }
 
 /* Audio control styling */
 .audio-toggle {
   @apply fixed bottom-4 right-4 p-2 bg-card/90 backdrop-blur-md border border-white/10 rounded-full cursor-pointer z-50;
-  box-shadow: 0 0 10px rgba(0, 157, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
   transition: all 0.3s ease;
 }
 
 .audio-toggle:hover {
-  box-shadow: 0 0 15px rgba(0, 200, 255, 0.5);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
 }
 
 /* Verdict styling */
@@ -500,7 +320,7 @@
 
 .verdict-legit {
   @apply border-cyan-500 bg-cyan-500/10;
-  box-shadow: 0 0 15px rgba(0, 200, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
 }
 
 .verdict-risky {
@@ -522,68 +342,4 @@
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
-}
-
-/* Tech buttons */
-.tech-button {
-  @apply relative overflow-hidden transition-all duration-300;
-  background: linear-gradient(45deg, rgba(0, 157, 255, 0.2), rgba(0, 200, 255, 0.1));
-}
-
-.tech-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 157, 255, 0.2), transparent);
-  transition: left 0.8s;
-}
-
-.tech-button:hover::before {
-  left: 100%;
-}
-
-/* Navbar enhancement */
-.cyber-navbar {
-  @apply fixed top-0 left-0 right-0 z-50 bg-background/30 backdrop-blur-lg;
-  border-bottom: 1px solid rgba(0, 157, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-.cyber-navbar::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(0, 157, 255, 0.3) 20%, 
-    rgba(0, 200, 255, 0.7) 50%,
-    rgba(0, 157, 255, 0.3) 80%, 
-    transparent 100%);
-  z-index: 1;
-}
-
-.cyber-link {
-  @apply relative transition-colors duration-300;
-}
-
-.cyber-link::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background-color: #00FFFF;
-  transition: width 0.3s ease;
-}
-
-.cyber-link:hover::after {
-  width: 100%;
 }
