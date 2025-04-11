@@ -23,100 +23,238 @@ const CyberBackground: React.FC = () => {
     // Resize listener
     window.addEventListener('resize', resizeCanvas);
     
-    // Line properties
-    const lines: {
+    // Circuit node properties
+    type CircuitNode = {
       x: number;
       y: number;
-      length: number;
-      speed: number;
+      connections: number[];
       color: string;
-      dotted: boolean;
-      dotSize: number;
-      dotGap: number;
-    }[] = [];
+      glowIntensity: number;
+      glowDirection: number;
+      isJunction: boolean;
+      size: number;
+    };
     
-    // Create lines
-    const createLines = () => {
-      const colors = ['#1EAEDB', '#00FFFF', '#D946EF', '#FF00FF'];
-      const lineCount = Math.floor(window.innerWidth / 20); // Adjust density here
+    // Create circuit board nodes
+    const nodes: CircuitNode[] = [];
+    const pathSegments: {start: number; end: number; color: string; glowIntensity: number; animated: boolean; progress: number}[] = [];
+    
+    // Colors
+    const colors = ['#00FFFF', '#FF00FF', '#8A2BE2', '#1E90FF', '#FF1493'];
+    
+    // Create circuit board
+    const generateCircuitBoard = () => {
+      // Clear existing nodes and segments
+      nodes.length = 0;
+      pathSegments.length = 0;
       
-      lines.length = 0; // Clear existing lines
+      // Create grid of nodes
+      const gridSize = 60; // Space between nodes
+      const jitterAmount = 15; // Random offset for nodes
       
-      for (let i = 0; i < lineCount; i++) {
-        const isCurved = Math.random() > 0.5;
-        const isDotted = Math.random() > 0.5;
+      // Calculate number of rows and columns based on screen size
+      const cols = Math.ceil(canvas.width / gridSize) + 2;
+      const rows = Math.ceil(canvas.height / gridSize) + 2;
+      
+      // Generate nodes
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          // Add some randomness to node positions to make it less grid-like
+          const xPos = x * gridSize - gridSize + (Math.random() * jitterAmount - jitterAmount/2);
+          const yPos = y * gridSize - gridSize + (Math.random() * jitterAmount - jitterAmount/2);
+          
+          // Only create some nodes (not a full grid)
+          if (Math.random() < 0.7) {
+            const isJunction = Math.random() < 0.3;
+            nodes.push({
+              x: xPos,
+              y: yPos,
+              connections: [],
+              color: colors[Math.floor(Math.random() * colors.length)],
+              glowIntensity: 0.1 + Math.random() * 0.9,
+              glowDirection: Math.random() > 0.5 ? 1 : -1,
+              isJunction,
+              size: isJunction ? 2 + Math.random() * 4 : 1
+            });
+          }
+        }
+      }
+      
+      // Connect nodes to create circuit paths
+      for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
         
-        lines.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          length: Math.random() * 300 + 100,
-          speed: Math.random() * 1.5 + 0.5,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          dotted: isDotted,
-          dotSize: Math.random() * 4 + 2,
-          dotGap: Math.random() * 20 + 10
-        });
+        // Find nearby nodes to connect (preferably in cardinal directions)
+        const nearbyIndices = [];
+        for (let j = 0; j < nodes.length; j++) {
+          if (i === j) continue;
+          
+          const targetNode = nodes[j];
+          const dx = targetNode.x - node.x;
+          const dy = targetNode.y - node.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          // Prefer connections that are more horizontal or vertical
+          const directionality = Math.min(
+            Math.abs(Math.abs(dx) - Math.abs(dy)),
+            Math.min(Math.abs(dx), Math.abs(dy))
+          );
+          
+          // Connect nodes that are close and in a good direction
+          if (distance < gridSize * 2 && directionality < gridSize / 2) {
+            nearbyIndices.push(j);
+          }
+        }
+        
+        // Randomly select up to 3 connections per node
+        const maxConnections = node.isJunction ? 4 : 2;
+        const shuffled = nearbyIndices.sort(() => Math.random() - 0.5);
+        const selectedConnections = shuffled.slice(0, Math.min(maxConnections, shuffled.length));
+        
+        // Create connections
+        for (const targetIndex of selectedConnections) {
+          if (!node.connections.includes(targetIndex) && !nodes[targetIndex].connections.includes(i)) {
+            node.connections.push(targetIndex);
+            
+            // Create path segment
+            pathSegments.push({
+              start: i,
+              end: targetIndex,
+              color: Math.random() < 0.7 ? node.color : colors[Math.floor(Math.random() * colors.length)],
+              glowIntensity: 0.2 + Math.random() * 0.8,
+              animated: Math.random() < 0.4,
+              progress: 0
+            });
+          }
+        }
       }
     };
     
-    createLines();
+    generateCircuitBoard();
     
-    // Animation
-    let animationFrameId: number;
-    const renderFrame = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw background
-      ctx.fillStyle = 'rgba(11, 14, 28, 0.95)'; // Dark blue background
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      generateCircuitBoard();
+    });
+    
+    // Draw function
+    const draw = () => {
+      // Clear canvas with dark background
+      ctx.fillStyle = 'rgba(10, 10, 25, 0.2)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // Draw lines
-      lines.forEach(line => {
-        ctx.beginPath();
+      // Draw connections first (under nodes)
+      for (const segment of pathSegments) {
+        const startNode = nodes[segment.start];
+        const endNode = nodes[segment.end];
         
-        if (line.dotted) {
-          // Draw dotted line
-          for (let i = 0; i < line.length; i += line.dotGap) {
-            const x = line.x + (i * Math.cos(line.y * 0.01));
-            ctx.fillStyle = line.color;
-            ctx.globalAlpha = 0.7 - (i / line.length * 0.4);
-            ctx.beginPath();
-            ctx.arc(x, line.y, line.dotSize, 0, Math.PI * 2);
-            ctx.fill();
-          }
+        if (!startNode || !endNode) continue;
+        
+        // Draw circuit path
+        ctx.beginPath();
+        ctx.moveTo(startNode.x, startNode.y);
+        
+        // Create circuit-like paths with right angles
+        if (Math.random() < 0.5) {
+          // Horizontal then vertical
+          ctx.lineTo(endNode.x, startNode.y);
+          ctx.lineTo(endNode.x, endNode.y);
         } else {
-          // Draw solid line
-          ctx.strokeStyle = line.color;
-          ctx.lineWidth = 2;
-          ctx.globalAlpha = 0.7;
-          ctx.moveTo(line.x, line.y);
-          ctx.lineTo(line.x + line.length, line.y);
+          // Vertical then horizontal
+          ctx.lineTo(startNode.x, endNode.y);
+          ctx.lineTo(endNode.x, endNode.y);
+        }
+        
+        // Set line style
+        ctx.strokeStyle = segment.color;
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = 0.6 * segment.glowIntensity;
+        ctx.stroke();
+        
+        // Add glow effect
+        ctx.shadowBlur = 10 * segment.glowIntensity;
+        ctx.shadowColor = segment.color;
+        ctx.stroke();
+        
+        // Reset shadow
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+        
+        // Add animation for some segments
+        if (segment.animated) {
+          segment.progress += 0.01;
+          if (segment.progress > 1) segment.progress = 0;
+          
+          // Draw a moving light pulse along the path
+          const pulsePos = segment.progress;
+          const pulseX = startNode.x + (endNode.x - startNode.x) * pulsePos;
+          const pulseY = startNode.y + (endNode.y - startNode.y) * pulsePos;
+          
+          // Draw pulse glow
+          const gradient = ctx.createRadialGradient(
+            pulseX, pulseY, 0, 
+            pulseX, pulseY, 15
+          );
+          gradient.addColorStop(0, segment.color);
+          gradient.addColorStop(1, 'transparent');
+          
+          ctx.fillStyle = gradient;
+          ctx.globalAlpha = segment.glowIntensity;
+          ctx.beginPath();
+          ctx.arc(pulseX, pulseY, 15, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      
+      // Draw nodes
+      for (const node of nodes) {
+        // Animate glow intensity
+        node.glowIntensity += 0.01 * node.glowDirection;
+        if (node.glowIntensity > 1) {
+          node.glowIntensity = 1;
+          node.glowDirection = -1;
+        } else if (node.glowIntensity < 0.2) {
+          node.glowIntensity = 0.2;
+          node.glowDirection = 1;
+        }
+        
+        // Draw node with glow
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
+        ctx.fillStyle = node.color;
+        ctx.globalAlpha = node.glowIntensity;
+        
+        // Add glow effect
+        ctx.shadowBlur = 10 * node.glowIntensity;
+        ctx.shadowColor = node.color;
+        ctx.fill();
+        
+        // Reset shadow
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+        
+        // Draw extra details for junction nodes
+        if (node.isJunction) {
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.size + 4, 0, Math.PI * 2);
+          ctx.strokeStyle = node.color;
+          ctx.lineWidth = 0.5;
+          ctx.globalAlpha = 0.3;
           ctx.stroke();
         }
-        
-        // Move the line
-        line.x -= line.speed;
-        
-        // Reset if off-screen
-        if (line.x + line.length < 0) {
-          line.x = canvas.width;
-          line.y = Math.random() * canvas.height;
-        }
-      });
+      }
       
-      animationFrameId = requestAnimationFrame(renderFrame);
+      animationFrameId = requestAnimationFrame(draw);
     };
     
     // Start animation
-    renderFrame();
-    
-    // Create lines on resize
-    window.addEventListener('resize', createLines);
+    let animationFrameId = requestAnimationFrame(draw);
     
     // Clean up
     return () => {
       window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('resize', createLines);
+      window.removeEventListener('resize', generateCircuitBoard);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);

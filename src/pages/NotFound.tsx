@@ -22,7 +22,7 @@ const NotFound = () => {
       <Navbar />
       
       <main className="flex-grow pt-24 pb-16 px-4 flex items-center justify-center">
-        <div className="text-center glass-card rounded-xl p-8 backdrop-blur-md border border-neon-cyan/20">
+        <div className="text-center neon-border p-8 backdrop-blur-md border-neon-pink/20 rounded-xl">
           <h1 className="text-6xl font-bold mb-4 neon-text">404</h1>
           <p className="text-xl text-muted-foreground mb-6">
             Oops! This page has vanished into the blockchain.
