@@ -1,58 +1,80 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, AlertCircle } from 'lucide-react';
+import { Search, AlertCircle, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+  HoverCard, HoverCardContent, HoverCardTrigger
+} from '@/components/ui/hover-card';
 import { Info } from 'lucide-react';
+import { 
+  detectAddressInfo, 
+  networks, 
+  BlockchainType, 
+  NetworkInfo,
+  getAddressDetails 
+} from '@/utils/addressUtils';
+import BlockchainIcon from './BlockchainIcon';
 
 interface AddressInputProps {
   onSubmit: (address: string, network: string) => void;
   isLoading: boolean;
 }
 
-type NetworkOption = {
-  id: string;
-  name: string;
-  color: string;
-};
-
-const networks: NetworkOption[] = [
-  { id: 'ethereum', name: 'Ethereum', color: 'border-[#627EEA] bg-[#627EEA]/10 text-[#627EEA]' },
-  { id: 'binance', name: 'BNB Chain', color: 'border-[#F3BA2F] bg-[#F3BA2F]/10 text-[#F3BA2F]' },
-  { id: 'polygon', name: 'Polygon', color: 'border-[#8247E5] bg-[#8247E5]/10 text-[#8247E5]' },
-  { id: 'arbitrum', name: 'Arbitrum', color: 'border-[#28A0F0] bg-[#28A0F0]/10 text-[#28A0F0]' },
-  { id: 'optimism', name: 'Optimism', color: 'border-[#FF0420] bg-[#FF0420]/10 text-[#FF0420]' },
-];
-
 const AddressInput: React.FC<AddressInputProps> = ({ onSubmit, isLoading }) => {
   const [address, setAddress] = useState<string>('');
-  const [network, setNetwork] = useState<string>('ethereum');
+  const [network, setNetwork] = useState<BlockchainType>('ethereum');
+  const [detectedNetwork, setDetectedNetwork] = useState<BlockchainType | null>(null);
+  const [addressType, setAddressType] = useState<'wallet' | 'contract' | 'unknown'>('unknown');
   const [error, setError] = useState<string | null>(null);
+  const [isDetecting, setIsDetecting] = useState(false);
+
+  useEffect(() => {
+    // Auto-detect network when address changes
+    const detectNetwork = async () => {
+      if (address?.length > 10) {
+        setIsDetecting(true);
+        const addressInfo = detectAddressInfo(address);
+        
+        if (addressInfo.isValid) {
+          setDetectedNetwork(addressInfo.network);
+          setNetwork(addressInfo.network);
+          
+          // Get more details (like if it's a contract or wallet)
+          try {
+            const details = await getAddressDetails(address, addressInfo.network);
+            setAddressType(details.type);
+          } catch (err) {
+            console.error("Error detecting address details:", err);
+          }
+        } else {
+          setDetectedNetwork(null);
+        }
+        setIsDetecting(false);
+      } else {
+        setDetectedNetwork(null);
+      }
+    };
+
+    const debounceTimer = setTimeout(detectNetwork, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [address]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple validation for Ethereum address format
     if (!address) {
       setError('Please enter an address');
       return;
     }
     
-    // Basic Ethereum address validation (starts with 0x and has 42 chars)
-    const isEthAddress = /^0x[a-fA-F0-9]{40}$/.test(address);
+    // Check if it appears to be a valid blockchain address
+    const addressInfo = detectAddressInfo(address);
     
-    if (!isEthAddress) {
-      setError('Please enter a valid address (0x...)');
+    if (!addressInfo.isValid) {
+      setError('Please enter a valid blockchain address');
       toast.error('Invalid address format');
       return;
     }
@@ -69,9 +91,10 @@ const AddressInput: React.FC<AddressInputProps> = ({ onSubmit, isLoading }) => {
             <Badge
               key={net.id}
               variant="outline"
-              className={`cursor-pointer ${network === net.id ? net.color : 'opacity-50'}`}
+              className={`cursor-pointer flex items-center gap-1 ${network === net.id ? net.color : 'opacity-50'}`}
               onClick={() => setNetwork(net.id)}
             >
+              <BlockchainIcon chain={net.id} size={12} />
               {net.name}
             </Badge>
           ))}
@@ -88,7 +111,7 @@ const AddressInput: React.FC<AddressInputProps> = ({ onSubmit, isLoading }) => {
                 <h4 className="text-sm font-semibold">Supported Networks</h4>
                 <p className="text-sm text-muted-foreground">
                   ReputexAI supports analysis across multiple blockchain networks.
-                  Select the network where your address is deployed.
+                  Select the network or let us auto-detect it.
                 </p>
               </div>
             </HoverCardContent>
@@ -99,11 +122,27 @@ const AddressInput: React.FC<AddressInputProps> = ({ onSubmit, isLoading }) => {
           <div className="flex items-center bg-card rounded-[calc(var(--radius)-1px)]">
             <Input
               type="text"
-              placeholder="Enter wallet or token address (0x...)"
+              placeholder="Enter wallet or token address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-lg py-6"
             />
+            {detectedNetwork && (
+              <div className="mr-2">
+                <Badge variant="outline" className={networks.find(n => n.id === detectedNetwork)?.color || ''}>
+                  <BlockchainIcon chain={detectedNetwork} size={12} className="mr-1" />
+                  {addressType !== 'unknown' && (
+                    <span className="mr-1 capitalize">{addressType}</span>
+                  )}
+                  {networks.find(n => n.id === detectedNetwork)?.name}
+                </Badge>
+              </div>
+            )}
+            {isDetecting && (
+              <div className="mr-2">
+                <Sparkles size={16} className="text-primary animate-pulse" />
+              </div>
+            )}
             <Button 
               type="submit" 
               className="bg-primary hover:bg-primary/80 text-white mr-1"
