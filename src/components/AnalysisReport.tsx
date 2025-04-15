@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import ScoreCard from '@/components/ScoreCard';
 import { 
@@ -12,22 +11,19 @@ import {
   BarChart2,
   AlertTriangle,
   Info,
-  CheckCircle2,
+  CheckCircle,
   XCircle,
-  Volume2,
-  Layers
+  Volume2
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import BlockchainIcon from './BlockchainIcon';
-import { BlockchainType, getNetworkInfo } from '@/utils/addressUtils';
 
 interface AnalysisReportProps {
   address: string;
-  network: BlockchainType;
+  network: string;
   scores: {
     trust_score: number;
     developer_score: number;
@@ -40,16 +36,29 @@ interface AnalysisReportProps {
   timestamp: string;
 }
 
-const NetworkBadge = ({ network }: { network: BlockchainType }) => {
-  const networkInfo = getNetworkInfo(network);
-  
+const NetworkBadge = ({ network }: { network: string }) => {
+  const networkColors: Record<string, string> = {
+    ethereum: 'border-[#627EEA] bg-[#627EEA]/10 text-[#627EEA]',
+    binance: 'border-[#F3BA2F] bg-[#F3BA2F]/10 text-[#F3BA2F]',
+    polygon: 'border-[#8247E5] bg-[#8247E5]/10 text-[#8247E5]',
+    arbitrum: 'border-[#28A0F0] bg-[#28A0F0]/10 text-[#28A0F0]',
+    optimism: 'border-[#FF0420] bg-[#FF0420]/10 text-[#FF0420]',
+  };
+
+  const networkNames: Record<string, string> = {
+    ethereum: 'Ethereum',
+    binance: 'BNB Chain',
+    polygon: 'Polygon',
+    arbitrum: 'Arbitrum',
+    optimism: 'Optimism',
+  };
+
   return (
     <Badge
       variant="outline"
-      className={`${networkInfo.color} flex items-center gap-1`}
+      className={networkColors[network] || 'border-muted-foreground text-muted-foreground'}
     >
-      <BlockchainIcon chain={network} size={12} />
-      {networkInfo.name}
+      {networkNames[network] || network}
     </Badge>
   );
 };
@@ -74,13 +83,6 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
       polygon: 'https://polygonscan.com/address/',
       arbitrum: 'https://arbiscan.io/address/',
       optimism: 'https://optimistic.etherscan.io/address/',
-      bitcoin: 'https://blockchain.info/address/',
-      solana: 'https://solscan.io/account/',
-      avalanche: 'https://snowtrace.io/address/',
-      fantom: 'https://ftmscan.com/address/',
-      base: 'https://basescan.org/address/',
-      zksync: 'https://explorer.zksync.io/address/',
-      l1x: 'https://explorer.l1x.io/address/', // Placeholder URL
     };
     
     return (explorers[network] || explorers.ethereum) + address;
@@ -94,36 +96,6 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
     holders: "Analysis of token distribution across different wallet types and concentration patterns",
     fraud: "Probability assessment of fraudulent activity or scam indicators"
   };
-  
-  // Network-specific metric descriptions
-  const getNetworkSpecificMetrics = () => {
-    switch(network) {
-      case 'bitcoin':
-        return {
-          title: "UTXO Analysis",
-          description: "Analysis of unspent transaction outputs and coin age"
-        };
-      case 'solana':
-        return {
-          title: "Program Execution",
-          description: "Analysis of on-chain program execution and resource consumption"
-        };
-      case 'avalanche':
-        return {
-          title: "Cross-Chain Activity",
-          description: "Evaluation of activity across C-Chain, P-Chain, and X-Chain"
-        };
-      case 'l1x':
-        return {
-          title: "L1X Ecosystem Integration",
-          description: "Assessment of integration with L1X native protocols and services"
-        };
-      default:
-        return null;
-    }
-  };
-  
-  const networkSpecificMetrics = getNetworkSpecificMetrics();
   
   const calculateVerdict = () => {
     const availableScores = [
@@ -161,7 +133,7 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
     else {
       return {
         verdict: "Likely Legit",
-        icon: <CheckCircle2 className="h-6 w-6 text-neon-pink" />,
+        icon: <CheckCircle className="h-6 w-6 text-neon-pink" />,
         color: "border-neon-pink bg-[#E31366]/10 text-neon-pink",
         description: "Analysis indicates favorable metrics across major indicators.",
         audioFile: "play_legit.mp3"
@@ -297,43 +269,6 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
               invertScore={true}
             />
           )}
-        </div>
-      )}
-      
-      {/* Network-specific metrics if available */}
-      {networkSpecificMetrics && (
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Layers className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold">{networkSpecificMetrics.title}</h3>
-          </div>
-          
-          <div className="glass-card rounded-xl p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <BlockchainIcon chain={network} size={18} />
-              <p className="text-sm text-muted-foreground">{networkSpecificMetrics.description}</p>
-            </div>
-            
-            {/* We would display actual metrics here in a real implementation */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-              <div className="bg-muted/30 p-3 rounded-lg">
-                <h4 className="text-xs text-muted-foreground mb-1">Metric 1</h4>
-                <p className="font-medium">Good</p>
-              </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
-                <h4 className="text-xs text-muted-foreground mb-1">Metric 2</h4>
-                <p className="font-medium">14.3 days</p>
-              </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
-                <h4 className="text-xs text-muted-foreground mb-1">Metric 3</h4>
-                <p className="font-medium">93%</p>
-              </div>
-              <div className="bg-muted/30 p-3 rounded-lg">
-                <h4 className="text-xs text-muted-foreground mb-1">Metric 4</h4>
-                <p className="font-medium">Low risk</p>
-              </div>
-            </div>
-          </div>
         </div>
       )}
       
