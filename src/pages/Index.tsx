@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -15,12 +16,13 @@ import {
   checkBlockchainForScore,
   storeScoreOnBlockchain,
 } from '@/lib/api-client';
+import { BlockchainType } from '@/utils/addressUtils';
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [analysis, setAnalysis] = useState<any | null>(null);
   const [searchedAddress, setSearchedAddress] = useState<string | null>(null);
-  const [searchedNetwork, setSearchedNetwork] = useState<string>('ethereum');
+  const [searchedNetwork, setSearchedNetwork] = useState<BlockchainType>('ethereum');
   const [audioEnabled, setAudioEnabled] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -33,12 +35,12 @@ const Index = () => {
     
     if (addressParam) {
       setSearchedAddress(addressParam);
-      setSearchedNetwork(networkParam);
-      handleAddressSearch(addressParam, networkParam);
+      setSearchedNetwork(networkParam as BlockchainType);
+      handleAddressSearch(addressParam, networkParam as BlockchainType);
     }
   }, [location]);
 
-  const handleAddressSearch = async (address: string, network: string) => {
+  const handleAddressSearch = async (address: string, network: BlockchainType) => {
     setIsLoading(true);
     setAnalysis(null);
     
@@ -106,7 +108,7 @@ const Index = () => {
 
   const handleSubmit = (address: string, network: string) => {
     setSearchedAddress(address);
-    setSearchedNetwork(network);
+    setSearchedNetwork(network as BlockchainType);
     // Update URL with the address and network parameters
     navigate(`/?address=${address}&network=${network}`);
   };
@@ -170,7 +172,7 @@ const Index = () => {
           {!isLoading && analysis && searchedAddress && (
             <AnalysisReport
               address={searchedAddress}
-              network={searchedNetwork || 'ethereum'}
+              network={searchedNetwork}
               scores={{
                 trust_score: analysis.trust_score,
                 developer_score: analysis.developer_score,
