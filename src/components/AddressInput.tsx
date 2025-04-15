@@ -30,6 +30,27 @@ const AddressInput: React.FC<AddressInputProps> = ({ onSubmit, isLoading }) => {
   const [addressType, setAddressType] = useState<'wallet' | 'contract' | 'unknown'>('unknown');
   const [error, setError] = useState<string | null>(null);
   const [isDetecting, setIsDetecting] = useState(false);
+  
+  // Define a new preferred order for the networks
+  const preferredOrder: BlockchainType[] = [
+    'bitcoin',
+    'l1x',
+    'ethereum',
+    'binance',
+    'polygon',
+    'arbitrum',
+    'optimism',
+    'solana',
+    'avalanche',
+    'fantom',
+    'base',
+    'zksync'
+  ];
+  
+  // Sort the networks array according to the preferred order
+  const orderedNetworks = [...networks].sort((a, b) => {
+    return preferredOrder.indexOf(a.id) - preferredOrder.indexOf(b.id);
+  });
 
   useEffect(() => {
     // Auto-detect network when address changes
@@ -87,7 +108,7 @@ const AddressInput: React.FC<AddressInputProps> = ({ onSubmit, isLoading }) => {
     <form onSubmit={handleSubmit} className="w-full max-w-3xl mx-auto">
       <div className="flex flex-col space-y-4">
         <div className="flex flex-wrap gap-2 justify-center mb-1">
-          {networks.map((net) => (
+          {orderedNetworks.map((net) => (
             <Badge
               key={net.id}
               variant="outline"
