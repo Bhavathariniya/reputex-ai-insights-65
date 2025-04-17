@@ -64,6 +64,9 @@ const SUPABASE_ANALYZE_URL = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze` 
   : 'http://localhost:54321/functions/v1/analyze';
 
+// Gemini API key
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyCKcAc1ZYcoviJ-6tdm-HuRguPMjMz6OSA';
+
 // Utility function to fetch data from APIs
 export async function fetchData<T>(url: string): Promise<ApiResponse<T>> {
   try {
@@ -226,26 +229,127 @@ async function simulateApiCall<T>(mockData: T): Promise<ApiResponse<T>> {
   });
 }
 
+// Function to directly use Gemini API for analysis if Supabase function fails
+async function generateGeminiAnalysis(inputData: any): Promise<ApiResponse<any>> {
+  try {
+    // Format the input data for Gemini
+    const prompt = `
+You're an AI that scores blockchain wallets and tokens for reputation. 
+Based on this data, give a trust score (0-100), a developer score (0-100), a liquidity score (0-100), verdict, and short reasoning.
+
+Data:
+${JSON.stringify(inputData, null, 2)}
+
+Respond in JSON:
+{
+  "trustScore": <number>,
+  "developerScore": <number>,
+  "liquidityScore": <number>,
+  "verdict": "<Likely Legit / Moderate Risk / High Risk>",
+  "summary": "<short explanation>"
+}
+`;
+
+    // Call Gemini API directly
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": GEMINI_API_KEY
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.2,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API responded with status ${response.status}`);
+    }
+
+    const result = await response.json();
+    let text = "";
+    
+    // Extract the generated text
+    if (result.candidates && result.candidates[0] && result.candidates[0].content) {
+      const content = result.candidates[0].content;
+      if (content.parts && content.parts[0]) {
+        text = content.parts[0].text;
+      }
+    }
+
+    // Parse the JSON response from Gemini
+    try {
+      const parsedResult = JSON.parse(text);
+      return { data: parsedResult };
+    } catch (error) {
+      console.error("Failed to parse Gemini response", error);
+      return { 
+        data: { 
+          trustScore: 50, 
+          developerScore: 50, 
+          liquidityScore: 50,
+          verdict: "Uncertain", 
+          summary: "Could not analyze data properly", 
+          raw: text 
+        } 
+      };
+    }
+  } catch (error) {
+    console.error("Gemini analysis error:", error);
+    return { error: "Failed to analyze with Gemini API" };
+  }
+}
+
 // Function to get AI analysis
 export async function getAIAnalysis(aggregatedData: any): Promise<ApiResponse<any>> {
   try {
-    // Try to use our Supabase Edge Function for real data
-    const response = await fetch(SUPABASE_ANALYZE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        address: aggregatedData.address || '', 
-        network: aggregatedData.network || 'ethereum',
-        data: aggregatedData
-      })
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      return { data };
+    // First try to use our Supabase Edge Function for analysis
+    try {
+      const response = await fetch(SUPABASE_ANALYZE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          address: aggregatedData.address || '', 
+          network: aggregatedData.network || 'ethereum',
+          data: aggregatedData
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return { data };
+      } else {
+        console.warn("Supabase function failed, falling back to direct Gemini API");
+      }
+    } catch (error) {
+      console.warn("Supabase function unavailable, falling back to direct Gemini API");
     }
     
-    console.warn("Supabase function failed, using simulated analysis");
+    // If Supabase function fails, try direct Gemini API call
+    const geminiResponse = await generateGeminiAnalysis(aggregatedData);
+    
+    if (geminiResponse.data) {
+      return geminiResponse;
+    }
+    
+    console.warn("Gemini API direct call failed, using simulated analysis");
+    
+    // If all else fails, use simulated data (fallback)
+    
     // Generate random scores with variation by network
     const network = aggregatedData.network as BlockchainType || 'ethereum';
     
@@ -275,7 +379,7 @@ export async function getAIAnalysis(aggregatedData: any): Promise<ApiResponse<an
         "The Arbitrum token demonstrates prudent treasury management and reasonable liquidity metrics. Code quality appears solid based on contract analysis, and community sentiment is generally positive."
       ],
       optimism: [
-        "The Optimism address shows healthy transaction patterns and active usage. Developer commitment appears strong with regular updates and improvements. Market liquidity is sufficient for current trading volume.",
+        "This Optimism address shows healthy transaction patterns and active usage. Developer commitment appears strong with regular updates and improvements. Market liquidity is sufficient for current trading volume.",
         "Analysis of this Optimism token reveals stable growth metrics and reasonable holder distribution. Contract security appears satisfactory and the project demonstrates signs of long-term viability."
       ],
       bitcoin: [
@@ -322,6 +426,7 @@ export async function getAIAnalysis(aggregatedData: any): Promise<ApiResponse<an
     });
   } catch (error) {
     console.error("Error getting AI analysis:", error);
+    
     // Fall back to simulated analysis
     
     // Generate random scores with variation by network
@@ -353,7 +458,7 @@ export async function getAIAnalysis(aggregatedData: any): Promise<ApiResponse<an
         "The Arbitrum token demonstrates prudent treasury management and reasonable liquidity metrics. Code quality appears solid based on contract analysis, and community sentiment is generally positive."
       ],
       optimism: [
-        "The Optimism address shows healthy transaction patterns and active usage. Developer commitment appears strong with regular updates and improvements. Market liquidity is sufficient for current trading volume.",
+        "This Optimism address shows healthy transaction patterns and active usage. Developer commitment appears strong with regular updates and improvements. Market liquidity is sufficient for current trading volume.",
         "Analysis of this Optimism token reveals stable growth metrics and reasonable holder distribution. Contract security appears satisfactory and the project demonstrates signs of long-term viability."
       ],
       bitcoin: [

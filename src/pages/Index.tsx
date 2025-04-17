@@ -56,6 +56,10 @@ const Index = () => {
         return;
       }
       
+      toast.info('Analyzing address with Gemini AI...', {
+        duration: 3000,
+      });
+      
       // Fetch wallet transaction data
       const walletData = await getWalletTransactions(address, network);
       
@@ -75,17 +79,22 @@ const Index = () => {
         network: network,
       };
       
-      // Get AI analysis
+      // Get AI analysis using Gemini
       const aiAnalysisResponse = await getAIAnalysis(aggregatedData);
       
       if (aiAnalysisResponse.data) {
-        // Enhance with additional scores if needed
+        // Map the response fields to ensure consistent naming
         const enhancedData = {
-          ...aiAnalysisResponse.data,
+          trust_score: aiAnalysisResponse.data.trustScore || aiAnalysisResponse.data.trust_score || 0,
+          developer_score: aiAnalysisResponse.data.developerScore || aiAnalysisResponse.data.developer_score || 0,
+          liquidity_score: aiAnalysisResponse.data.liquidityScore || aiAnalysisResponse.data.liquidity_score || 0,
           community_score: aiAnalysisResponse.data.community_score || Math.floor(Math.random() * 30) + 50,
           holder_distribution: aiAnalysisResponse.data.holder_distribution || Math.floor(Math.random() * 40) + 40,
           fraud_risk: aiAnalysisResponse.data.fraud_risk || Math.floor(Math.random() * 30) + 10,
+          analysis: aiAnalysisResponse.data.summary || aiAnalysisResponse.data.analysis || "",
+          verdict: aiAnalysisResponse.data.verdict || "",
           network: network,
+          timestamp: new Date().toISOString()
         };
         
         // Store the analysis result
@@ -94,9 +103,9 @@ const Index = () => {
         // Store for future reference
         await storeScoreOnBlockchain(address, enhancedData);
         
-        toast.success('Analysis complete');
+        toast.success('Gemini AI analysis complete');
       } else {
-        toast.error('Failed to analyze address');
+        toast.error('Failed to analyze address with Gemini AI');
       }
     } catch (error) {
       console.error('Error in analysis process:', error);
