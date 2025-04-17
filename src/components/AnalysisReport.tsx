@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import ScoreCard from '@/components/ScoreCard';
 import { 
@@ -15,7 +14,8 @@ import {
   CheckCircle2,
   XCircle,
   Volume2,
-  Layers
+  Layers,
+  Tag
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
@@ -28,6 +28,8 @@ import { BlockchainType, getNetworkInfo } from '@/utils/addressUtils';
 interface AnalysisReportProps {
   address: string;
   network: BlockchainType;
+  tokenName?: string;
+  symbol?: string;
   scores: {
     trust_score: number;
     developer_score: number;
@@ -57,6 +59,8 @@ const NetworkBadge = ({ network }: { network: BlockchainType }) => {
 const AnalysisReport: React.FC<AnalysisReportProps> = ({ 
   address, 
   network = 'ethereum',
+  tokenName = 'Unknown',
+  symbol = '',
   scores, 
   analysis, 
   timestamp 
@@ -219,6 +223,20 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
         </div>
       </div>
       
+      {/* Token Name and Symbol (if available) */}
+      {tokenName && tokenName !== 'Unknown' && (
+        <div className="bg-muted/30 backdrop-blur-sm p-4 rounded-lg mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Tag className="h-4 w-4 text-primary" />
+            <h3 className="font-medium">Token</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <p className="text-lg font-medium">{tokenName}</p>
+            {symbol && <Badge variant="outline" className="uppercase">{symbol}</Badge>}
+          </div>
+        </div>
+      )}
+      
       <div className={`mb-6 rounded-lg border ${verdictInfo.color}`}>
         <div className="p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -242,6 +260,7 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
         </div>
       </div>
       
+      {/* Rest of the component remains unchanged */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <ScoreCardWithInfo 
           title="Trust Score" 

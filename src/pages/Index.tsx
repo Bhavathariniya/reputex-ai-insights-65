@@ -82,6 +82,8 @@ const Index = () => {
         // Enhance with additional scores if needed
         const enhancedData = {
           ...aiAnalysisResponse.data,
+          tokenName: aiAnalysisResponse.data.tokenName || tokenData.data?.tokenName || "Unknown",
+          symbol: aiAnalysisResponse.data.symbol || tokenData.data?.symbol || "",
           community_score: aiAnalysisResponse.data.community_score || Math.floor(Math.random() * 30) + 50,
           holder_distribution: aiAnalysisResponse.data.holder_distribution || Math.floor(Math.random() * 40) + 40,
           fraud_risk: aiAnalysisResponse.data.fraud_risk || Math.floor(Math.random() * 30) + 10,
@@ -173,6 +175,8 @@ const Index = () => {
             <AnalysisReport
               address={searchedAddress}
               network={searchedNetwork}
+              tokenName={analysis.tokenName}
+              symbol={analysis.symbol}
               scores={{
                 trust_score: analysis.trust_score || analysis.trustScore,
                 developer_score: analysis.developer_score || analysis.developerScore,

@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.21.0";
 
 // Initialize Google Generative AI
 import { GoogleGenerativeAI } from "npm:@google/generative-ai@0.5.0";
@@ -96,9 +95,32 @@ async function getWalletData(address: string, network: string): Promise<WalletDa
   }
 }
 
-// Function to get token data from CoinGecko
+// Function to get token data using blockchain explorer API for contract info
 async function getTokenData(address: string, network: string = 'ethereum'): Promise<TokenData> {
   try {
+    // First try to get token name directly from blockchain explorer API
+    const networkConfig = NETWORK_APIS[network as keyof typeof NETWORK_APIS] || NETWORK_APIS.ethereum;
+    
+    // Try to get token details directly from blockchain explorer
+    const tokenInfoResponse = await fetch(`${networkConfig.url}?module=token&action=tokeninfo&contractaddress=${address}&apikey=${networkConfig.key}`);
+    const tokenInfoData = await tokenInfoResponse.json();
+    
+    console.log("Token info from blockchain explorer:", tokenInfoData);
+    
+    // If we have valid token data from the explorer
+    if (tokenInfoData.status === "1" && tokenInfoData.result && tokenInfoData.result.length > 0) {
+      const tokenInfo = tokenInfoData.result[0];
+      
+      return {
+        tokenName: tokenInfo.name || 'Unknown',
+        symbol: tokenInfo.symbol || '',
+        marketCap: parseFloat(tokenInfo.totalSupply || '0') * parseFloat(tokenInfo.price || '0'),
+        price: parseFloat(tokenInfo.price || '0'),
+        liquidity: 0 // Not provided by most explorers
+      };
+    }
+    
+    // Fallback to CoinGecko if blockchain explorer didn't return token data
     const coinGeckoNetworkId = network === 'binance' ? 'binance-smart-chain' : 
                               network === 'avalanche' ? 'avalanche' : 
                               network === 'arbitrum' ? 'arbitrum-one' :
@@ -108,6 +130,8 @@ async function getTokenData(address: string, network: string = 'ethereum'): Prom
     const response = await fetch(url);
     const data = await response.json();
     
+    console.log("Token info from CoinGecko:", data);
+    
     return {
       tokenName: data.name || 'Unknown',
       symbol: data.symbol || '',
@@ -115,7 +139,8 @@ async function getTokenData(address: string, network: string = 'ethereum'): Prom
       price: data.market_data?.current_price?.usd || 0,
       liquidity: data.liquidity_score || 0
     };
-  } catch {
+  } catch (error) {
+    console.error("Error getting token data:", error);
     return {
       tokenName: 'Unknown',
       symbol: '',
@@ -137,9 +162,13 @@ async function generateAIAnalysis(inputData: any): Promise<AIAnalysisResult> {
     // Use gemini-1.0-pro instead of gemini-pro to ensure compatibility
     const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
 
+    // Include token name if available
+    const tokenName = inputData.tokenName !== 'Unknown' ? inputData.tokenName : '';
+    
     const prompt = `
 You're an AI that scores blockchain wallets and tokens for reputation. 
 Based on this data, give a trust score (0-100), a developer score (0-100), a liquidity score (0-100), verdict, and short reasoning.
+${tokenName ? `The token name is "${tokenName}". Refer to this token by name in your analysis.` : ''}
 
 Data:
 ${JSON.stringify(inputData, null, 2)}
@@ -150,7 +179,7 @@ Respond in JSON:
   "developerScore": <number>,
   "liquidityScore": <number>,
   "verdict": "<Likely Legit / Moderate Risk / High Risk>",
-  "summary": "<short explanation>"
+  "summary": "<short explanation - include the token name '${tokenName}' if provided>"
 }
 `;
 
@@ -168,30 +197,33 @@ Respond in JSON:
         developerScore: 50,
         liquidityScore: 50,
         verdict: "Uncertain",
-        summary: "Could not analyze data properly.",
+        summary: `Could not analyze data properly${tokenName ? ` for ${tokenName}` : ''}.`,
         raw: text 
       };
     }
   } catch (error) {
     console.error("AI analysis error:", error);
+    const tokenName = inputData.tokenName !== 'Unknown' ? inputData.tokenName : '';
     return { 
       trustScore: 0, 
       verdict: "Error",
-      summary: "AI analysis failed: " + (error instanceof Error ? error.message : String(error))
+      summary: `AI analysis failed${tokenName ? ` for ${tokenName}` : ''}: ` + (error instanceof Error ? error.message : String(error))
     };
   }
 }
 
 serve(async (req) => {
   // Handle CORS
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
+  
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
+      headers: corsHeaders,
     });
   }
   
@@ -201,7 +233,7 @@ serve(async (req) => {
       status: 405,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        ...corsHeaders,
       },
     });
   }
@@ -213,7 +245,7 @@ serve(async (req) => {
     if (!address) {
       return new Response(JSON.stringify({ error: "Address is required" }), {
         status: 400,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
     
@@ -246,18 +278,20 @@ serve(async (req) => {
     
     return new Response(JSON.stringify({ 
       ...aiResult,
+      tokenName: tokenData.tokenName,
+      symbol: tokenData.symbol,
       address,
       network,
       timestamp: new Date().toISOString(),
     }), {
       status: 200,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error) {
     console.error("Error processing request:", error);
     return new Response(JSON.stringify({ error: "Analysis failed", message: String(error) }), {
       status: 500,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 });
