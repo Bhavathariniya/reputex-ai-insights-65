@@ -45,29 +45,29 @@ const Index = () => {
     setAnalysis(null);
     
     try {
-      // First check if we already have this score on the blockchain
+      // First check if we already have this score in storage
       const existingScoreResponse = await checkBlockchainForScore(address);
       
       if (existingScoreResponse.data) {
         // Use existing score
         setAnalysis(existingScoreResponse.data);
-        toast.success('Retrieved existing analysis from blockchain');
+        toast.success('Retrieved existing analysis from storage');
         setIsLoading(false);
         return;
       }
       
-      // If no existing score, perform new analysis
       // Fetch wallet transaction data
-      const walletData = await getWalletTransactions(address);
+      const walletData = await getWalletTransactions(address, network);
       
-      // Fetch token data
-      const tokenData = await getTokenData(address);
+      // Fetch token data if it's a contract
+      const tokenData = await getTokenData(address, network);
       
       // Simulate GitHub repo activity
       const repoData = await getRepoActivity("example/repo");
       
       // Aggregate the data
       const aggregatedData = {
+        address,
         ...walletData.data,
         ...tokenData.data,
         ...repoData.data,
@@ -79,19 +79,19 @@ const Index = () => {
       const aiAnalysisResponse = await getAIAnalysis(aggregatedData);
       
       if (aiAnalysisResponse.data) {
-        // Enhance with additional scores
+        // Enhance with additional scores if needed
         const enhancedData = {
           ...aiAnalysisResponse.data,
-          community_score: Math.floor(Math.random() * 30) + 50, // Random score between 50-80
-          holder_distribution: Math.floor(Math.random() * 40) + 40, // Random score between 40-80
-          fraud_risk: Math.floor(Math.random() * 30) + 10, // Random score between 10-40
+          community_score: aiAnalysisResponse.data.community_score || Math.floor(Math.random() * 30) + 50,
+          holder_distribution: aiAnalysisResponse.data.holder_distribution || Math.floor(Math.random() * 40) + 40,
+          fraud_risk: aiAnalysisResponse.data.fraud_risk || Math.floor(Math.random() * 30) + 10,
           network: network,
         };
         
         // Store the analysis result
         setAnalysis(enhancedData);
         
-        // Store on blockchain
+        // Store for future reference
         await storeScoreOnBlockchain(address, enhancedData);
         
         toast.success('Analysis complete');
@@ -128,7 +128,7 @@ const Index = () => {
         console.error("Error playing audio:", error);
       }
     } else {
-      // Stop ambient sound - this is simplified; you'd need to keep a reference to the audio element
+      // Stop ambient sound
       const audioElements = document.querySelectorAll('audio');
       audioElements.forEach(audio => {
         audio.pause();
@@ -174,14 +174,14 @@ const Index = () => {
               address={searchedAddress}
               network={searchedNetwork}
               scores={{
-                trust_score: analysis.trust_score,
-                developer_score: analysis.developer_score,
-                liquidity_score: analysis.liquidity_score,
+                trust_score: analysis.trust_score || analysis.trustScore,
+                developer_score: analysis.developer_score || analysis.developerScore,
+                liquidity_score: analysis.liquidity_score || analysis.liquidityScore,
                 community_score: analysis.community_score,
                 holder_distribution: analysis.holder_distribution,
                 fraud_risk: analysis.fraud_risk,
               }}
-              analysis={analysis.analysis}
+              analysis={analysis.analysis || analysis.summary}
               timestamp={analysis.timestamp}
             />
           )}
