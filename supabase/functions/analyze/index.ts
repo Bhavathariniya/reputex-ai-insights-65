@@ -129,8 +129,12 @@ async function getTokenData(address: string, network: string = 'ethereum'): Prom
 // Function to generate AI analysis using Google Gemini
 async function generateAIAnalysis(inputData: any): Promise<AIAnalysisResult> {
   try {
-    const genAI = new GoogleGenerativeAI(Deno.env.get("GEMINI_API_KEY") || "");
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Use the API key from environment variables or the provided one
+    const apiKey = Deno.env.get("GEMINI_API_KEY") || "AIzaSyCKcAc1ZYcoviJ-6tdm-HuRguPMjMz6OSA";
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // Use gemini-1.0-pro instead of gemini-pro to ensure compatibility
+    const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
 
     const prompt = `
 You're an AI that scores blockchain wallets and tokens for reputation. 
@@ -151,10 +155,12 @@ Respond in JSON:
 
     const result = await model.generateContent(prompt);
     const text = result.response.text();
+    console.log("Gemini API response:", text);
 
     try {
       return JSON.parse(text);
     } catch (e) {
+      console.error("Error parsing Gemini response:", e);
       return { 
         trustScore: 50, 
         developerScore: 50,
@@ -169,7 +175,7 @@ Respond in JSON:
     return { 
       trustScore: 0, 
       verdict: "Error",
-      summary: "AI analysis failed."
+      summary: "AI analysis failed: " + (error instanceof Error ? error.message : String(error))
     };
   }
 }
@@ -238,7 +244,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Error processing request:", error);
-    return new Response(JSON.stringify({ error: "Analysis failed" }), {
+    return new Response(JSON.stringify({ error: "Analysis failed", message: String(error) }), {
       status: 500,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
