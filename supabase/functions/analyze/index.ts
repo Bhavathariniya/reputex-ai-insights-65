@@ -131,6 +131,7 @@ async function generateAIAnalysis(inputData: any): Promise<AIAnalysisResult> {
   try {
     // Use the API key from environment variables or the provided one
     const apiKey = Deno.env.get("GEMINI_API_KEY") || "AIzaSyCKcAc1ZYcoviJ-6tdm-HuRguPMjMz6OSA";
+    console.log("Using API key (masked):", apiKey ? "***" + apiKey.substring(apiKey.length - 5) : "Not provided");
     const genAI = new GoogleGenerativeAI(apiKey);
     
     // Use gemini-1.0-pro instead of gemini-pro to ensure compatibility
@@ -153,6 +154,7 @@ Respond in JSON:
 }
 `;
 
+    console.log("Sending prompt to Gemini API:", prompt.substring(0, 100) + "...");
     const result = await model.generateContent(prompt);
     const text = result.response.text();
     console.log("Gemini API response:", text);
@@ -205,6 +207,7 @@ serve(async (req) => {
   }
   
   try {
+    console.log("Received analyze request");
     const { address, network = 'ethereum', githubRepo = null } = await req.json() as AnalyzeRequest;
     
     if (!address) {
@@ -214,13 +217,18 @@ serve(async (req) => {
       });
     }
     
+    console.log(`Processing analysis for address: ${address} on network: ${network}`);
+    
     // Get wallet and token data
     const walletData = await getWalletData(address, network);
+    console.log("Wallet data:", walletData);
+    
     let tokenData = { tokenName: 'Unknown', symbol: '', marketCap: 0, price: 0, liquidity: 0 };
     
     // Only try to get token data if it's a contract
     if (walletData.type === 'contract') {
       tokenData = await getTokenData(address, network);
+      console.log("Token data:", tokenData);
     }
     
     const inputData = {
@@ -230,8 +238,11 @@ serve(async (req) => {
       ...tokenData,
     };
     
+    console.log("Generating AI analysis with data:", inputData);
+    
     // Generate AI analysis
     const aiResult = await generateAIAnalysis(inputData);
+    console.log("AI analysis result:", aiResult);
     
     return new Response(JSON.stringify({ 
       ...aiResult,
