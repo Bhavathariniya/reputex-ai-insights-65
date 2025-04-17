@@ -38,23 +38,23 @@ interface AIAnalysisResult {
 const NETWORK_APIS = {
   ethereum: {
     url: Deno.env.get("ETHERSCAN_API_URL") || "https://api.etherscan.io/api",
-    key: Deno.env.get("ETHERSCAN_API_KEY") || "VZFDUWB3YGQ1YCDKTCU1D6DDSS"
+    key: Deno.env.get("ETHERSCAN_API_KEY") || ""
   },
   binance: {
-    url: Deno.env.get("BSCSCAN_API_URL") || "https://api.bscscan.com/api",
-    key: Deno.env.get("BSCSCAN_API_KEY") || "ZM8ACMJB67C2IXKKBF8URFUNSY"
+    url: Deno.env.get("BSCSCAN_API_KEY") || "https://api.bscscan.com/api",
+    key: Deno.env.get("BSCSCAN_API_KEY") || ""
   },
   avalanche: {
-    url: Deno.env.get("SNOWSCAN_API_URL") || "https://api.snowscan.xyz/api",
-    key: Deno.env.get("SNOWSCAN_API_KEY") || "ATJQERBKV1CI3GVKNSE3Q7RGEJ"
+    url: Deno.env.get("SNOWSCAN_API_KEY") || "https://api.snowscan.xyz/api",
+    key: Deno.env.get("SNOWSCAN_API_KEY") || ""
   },
   arbitrum: {
-    url: Deno.env.get("ARBISCAN_API_URL") || "https://api.arbiscan.io/api",
-    key: Deno.env.get("ARBISCAN_API_KEY") || "B6SVGA7K3YBJEQ69AFKJF4YHVX"
+    url: Deno.env.get("ARBISCAN_API_KEY") || "https://api.arbiscan.io/api",
+    key: Deno.env.get("ARBISCAN_API_KEY") || ""
   },
   optimism: {
-    url: Deno.env.get("OPTIMISM_API_URL") || "https://api-optimistic.etherscan.io/api",
-    key: Deno.env.get("OPTIMISM_API_KEY") || "66N5FRNV1ZD4I87S7MAHCJVXFJ"
+    url: Deno.env.get("OPTIMISM_API_KEY") || "https://api-optimistic.etherscan.io/api",
+    key: Deno.env.get("OPTIMISM_API_KEY") || ""
   }
 };
 
@@ -129,8 +129,7 @@ async function getTokenData(address: string, network: string = 'ethereum'): Prom
 // Function to generate AI analysis using Google Gemini
 async function generateAIAnalysis(inputData: any): Promise<AIAnalysisResult> {
   try {
-    // Initialize Gemini API with hardcoded key as fallback if environment variable is not set
-    const genAI = new GoogleGenerativeAI(Deno.env.get("GEMINI_API_KEY") || "AIzaSyCKcAc1ZYcoviJ-6tdm-HuRguPMjMz6OSA");
+    const genAI = new GoogleGenerativeAI(Deno.env.get("GEMINI_API_KEY") || "");
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `
