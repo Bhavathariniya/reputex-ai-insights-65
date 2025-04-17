@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,10 +18,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import BlockchainIcon from './BlockchainIcon';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { BlockchainType } from '@/utils/addressUtils';  // Import BlockchainType
 
 interface TokenDetailsProps {
   tokenName?: string;
-  network?: string;
+  network?: BlockchainType;  // Change network to BlockchainType
   contractAddress?: string;
   creationDate?: string;
   creator?: string;
@@ -100,7 +100,7 @@ const RiskLevelItem = ({
 
 const TokenDetails: React.FC<TokenDetailsProps> = ({
   tokenName = "Defiant",
-  network = "solana",
+  network = "solana", // This was a raw string, now explicitly typed
   contractAddress = "DPTP4fUfWuwVTgCmt...eCTBjc2YKgpDpump",
   creationDate = "Apr 16, 2025",
   creator = "82J2Hqcfp1TLeoGdB...e6G2vLYx5LgmwRRw",
