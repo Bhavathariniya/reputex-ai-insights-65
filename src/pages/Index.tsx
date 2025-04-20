@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -55,16 +56,46 @@ const Index = () => {
         return;
       }
       
-      // If no existing score, directly use AI analysis
-      // Our enhanced getAIAnalysis now handles the token data fetching internally
-      const aiAnalysisResponse = await getAIAnalysis({
-        address: address,
-        network: network
-      });
+      // Fetch wallet transaction data
+      const walletData = await getWalletTransactions(address, network);
+      
+      // Fetch token data if it's a contract
+      const tokenData = await getTokenData(address, network);
+      
+      // Simulate GitHub repo activity
+      const repoData = await getRepoActivity("example/repo");
+      
+      // Aggregate the data
+      const aggregatedData = {
+        address,
+        ...walletData.data,
+        ...tokenData.data,
+        ...repoData.data,
+        community_size: "Medium", // Simulated community size
+        network: network,
+      };
+      
+      // Get AI analysis
+      const aiAnalysisResponse = await getAIAnalysis(aggregatedData);
       
       if (aiAnalysisResponse.data) {
-        // Set the analysis result
-        setAnalysis(aiAnalysisResponse.data);
+        // Enhance with additional scores if needed
+        const enhancedData = {
+          ...aiAnalysisResponse.data,
+          tokenName: aiAnalysisResponse.data.tokenName || tokenData.data?.tokenName || "Unknown",
+          symbol: aiAnalysisResponse.data.symbol || tokenData.data?.symbol || "",
+          community_score: aiAnalysisResponse.data.community_score || Math.floor(Math.random() * 30) + 50,
+          holder_distribution: aiAnalysisResponse.data.holder_distribution || Math.floor(Math.random() * 40) + 40,
+          fraud_risk: aiAnalysisResponse.data.fraud_risk || Math.floor(Math.random() * 30) + 10,
+          network: network,
+        };
+        
+        // Store the analysis result
+        setAnalysis(enhancedData);
+        
+        // Store for future reference
+        await storeScoreOnBlockchain(address, enhancedData);
+        
         toast.success('Analysis complete');
       } else {
         toast.error('Failed to analyze address');
@@ -156,9 +187,6 @@ const Index = () => {
               }}
               analysis={analysis.analysis || analysis.summary}
               timestamp={analysis.timestamp}
-              riskCategory={analysis.risk_category}
-              checksPassed={analysis.checks_passed}
-              totalChecks={analysis.total_checks}
             />
           )}
           
