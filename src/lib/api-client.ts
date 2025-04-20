@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 interface WalletTransactionResponse {
@@ -147,10 +146,9 @@ export async function getAIAnalysis(data: any): Promise<AIAnalysisResponse> {
 
 export async function checkBlockchainForScore(address: string): Promise<AIAnalysisResponse> {
   try {
-    // Try to get existing score from database
+    // Try to get existing score from database using the correct Supabase function invoke syntax
     const { data: scoreData, error } = await supabase.functions.invoke('token-score', {
-      method: 'GET',
-      path: `ethereum/${address}`,
+      body: { address, network: 'ethereum' }
     });
 
     if (error || !scoreData) {
@@ -200,10 +198,9 @@ export async function storeScoreOnBlockchain(
 
 export async function getScoreHistory(): Promise<{ data: any[] }> {
   try {
-    // Get history from Supabase Edge Function
+    // Get history from Supabase Edge Function using the correct invoke syntax
     const { data, error } = await supabase.functions.invoke('token-score', {
-      method: 'GET',
-      path: 'history',
+      body: { type: 'history' }
     });
 
     if (error) {
