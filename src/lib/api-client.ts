@@ -1,5 +1,5 @@
 
-import { supabaseClient } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 interface WalletTransactionResponse {
   data: {
@@ -84,7 +84,7 @@ export async function getRepoActivity(
 export async function getAIAnalysis(data: any): Promise<AIAnalysisResponse> {
   try {
     // Call the Supabase Edge Function to analyze the token/address
-    const { data: analysisData, error } = await supabaseClient.functions.invoke('analyze', {
+    const { data: analysisData, error } = await supabase.functions.invoke('analyze', {
       body: {
         address: data.address,
         network: data.network || 'ethereum',
@@ -148,7 +148,7 @@ export async function getAIAnalysis(data: any): Promise<AIAnalysisResponse> {
 export async function checkBlockchainForScore(address: string): Promise<AIAnalysisResponse> {
   try {
     // Try to get existing score from database
-    const { data: scoreData, error } = await supabaseClient.functions.invoke('token-score', {
+    const { data: scoreData, error } = await supabase.functions.invoke('token-score', {
       method: 'GET',
       path: `ethereum/${address}`,
     });
@@ -196,4 +196,47 @@ export async function storeScoreOnBlockchain(
   
   // In a real implementation, we would call our database or blockchain storage API
   return Promise.resolve({ success: true });
+}
+
+export async function getScoreHistory(): Promise<{ data: any[] }> {
+  try {
+    // Get history from Supabase Edge Function
+    const { data, error } = await supabase.functions.invoke('token-score', {
+      method: 'GET',
+      path: 'history',
+    });
+
+    if (error) {
+      console.error("Error fetching score history:", error);
+      return { data: [] };
+    }
+
+    return { data: data || [] };
+  } catch (error) {
+    console.error("Error in getScoreHistory:", error);
+    
+    // Return simulated data for development
+    return {
+      data: [
+        {
+          address: '0x1234567890abcdef1234567890abcdef12345678',
+          trustScore: 85,
+          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          network: 'ethereum'
+        },
+        {
+          address: '0xabcdef1234567890abcdef1234567890abcdef12',
+          trustScore: 65,
+          timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+          network: 'binance'
+        },
+        {
+          address: '0x7890abcdef1234567890abcdef1234567890abcd',
+          trustScore: 92,
+          timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          network: 'avalanche'
+        }
+      ]
+    };
+  }
 }

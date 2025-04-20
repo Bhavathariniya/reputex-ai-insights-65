@@ -29,19 +29,55 @@ serve(async (req) => {
   const url = new URL(req.url);
   const path = url.pathname.split('/');
   
-  // Expected path format: /token-score/ethereum/0xaddress
-  if (path.length < 4) {
-    return new Response(JSON.stringify({ error: "Invalid request path. Use /token-score/{network}/{address}" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-  
-  const network = path[2].toLowerCase();
-  const address = path[3].toLowerCase();
-  
   try {
     const supabase = await getSupabaseClient();
+    
+    // Check if requesting history
+    if (path[2] === "history") {
+      // Query the database for all token assessments
+      const { data, error } = await supabase
+        .from('token_assessments')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+        
+      if (error) {
+        console.error("Error fetching token history:", error);
+        return new Response(JSON.stringify({ 
+          error: "Database error", 
+          message: error.message 
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
+      // Transform the data for the frontend
+      const transformedData = data.map(item => ({
+        address: item.address,
+        trustScore: item.percentage_score,
+        timestamp: item.created_at,
+        network: item.network,
+        tokenName: item.token_name,
+        symbol: item.symbol
+      }));
+      
+      return new Response(JSON.stringify(transformedData), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    
+    // Expected path format for single token: /token-score/{network}/{address}
+    if (path.length < 4) {
+      return new Response(JSON.stringify({ error: "Invalid request path. Use /token-score/{network}/{address}" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    
+    const network = path[2].toLowerCase();
+    const address = path[3].toLowerCase();
     
     // Query the database for the token assessment
     const { data, error } = await supabase
