@@ -40,6 +40,9 @@ interface AnalysisReportProps {
   };
   analysis: string;
   timestamp: string;
+  riskCategory?: string;  // Add riskCategory prop
+  checksPassed?: number;  // Add checksPassed prop
+  totalChecks?: number;   // Add totalChecks prop
 }
 
 const NetworkBadge = ({ network }: { network: BlockchainType }) => {
@@ -63,7 +66,10 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
   symbol = '',
   scores, 
   analysis, 
-  timestamp 
+  timestamp,
+  riskCategory,
+  checksPassed,
+  totalChecks
 }) => {
   const formattedAddress = address.slice(0, 6) + '...' + address.slice(-4);
   const timeAgo = formatDistanceToNow(new Date(timestamp), { addSuffix: true });
