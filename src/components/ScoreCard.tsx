@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   ShieldX,
   Users,
-  Droplet,
   BarChart2
 } from 'lucide-react';
 
@@ -24,9 +23,11 @@ interface ScoreCardProps {
   score: number;
   type: 'trust' | 'developer' | 'liquidity' | 'community' | 'holders' | 'fraud';
   description?: string;
+  checksCompleted?: number;
+  totalChecks?: number;
 }
 
-const ScoreCard: React.FC<ScoreCardProps> = ({ title, score, type, description }) => {
+const ScoreCard: React.FC<ScoreCardProps> = ({ title, score, type, description, checksCompleted, totalChecks }) => {
   // Determine score level
   const scoreLevel: ScoreLevel = 
     score >= 80 ? ScoreLevel.HIGH :
@@ -91,7 +92,14 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ title, score, type, description }
             {renderIcon()}
             <h3 className="text-lg font-semibold">{title}</h3>
           </div>
-          <div className="text-2xl font-bold">{score}<span className="text-sm text-muted-foreground">/100</span></div>
+          <div className="text-2xl font-bold">
+            {score}<span className="text-sm text-muted-foreground">/100</span>
+            {checksCompleted !== undefined && totalChecks !== undefined && (
+              <div className="text-xs text-muted-foreground mt-1 text-right">
+                {checksCompleted}/{totalChecks} checks
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="score-bar mb-3">

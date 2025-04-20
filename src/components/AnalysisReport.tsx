@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import ScoreCard from '@/components/ScoreCard';
 import { 
@@ -15,7 +16,10 @@ import {
   XCircle,
   Volume2,
   Layers,
-  Tag
+  Tag,
+  CircleCheck,
+  CircleX,
+  CircleAlert
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
@@ -40,6 +44,16 @@ interface AnalysisReportProps {
   };
   analysis: string;
   timestamp: string;
+  riskCategory?: string;
+  totalChecks?: {
+    critical?: number;
+    risky?: number;
+    medium?: number;
+    neutral?: number;
+    good?: number;
+    great?: number;
+    unavailable?: number;
+  };
 }
 
 const NetworkBadge = ({ network }: { network: BlockchainType }) => {
@@ -63,7 +77,9 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
   symbol = '',
   scores, 
   analysis, 
-  timestamp 
+  timestamp,
+  riskCategory,
+  totalChecks = {}
 }) => {
   const formattedAddress = address.slice(0, 6) + '...' + address.slice(-4);
   const timeAgo = formatDistanceToNow(new Date(timestamp), { addSuffix: true });
@@ -130,6 +146,42 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
   const networkSpecificMetrics = getNetworkSpecificMetrics();
   
   const calculateVerdict = () => {
+    // If risk category is provided, use it
+    if (riskCategory) {
+      switch(riskCategory.toLowerCase()) {
+        case 'low':
+        case 'safe':
+          return {
+            verdict: "Likely Legit",
+            icon: <CheckCircle2 className="h-6 w-6 text-neon-pink" />,
+            color: "border-neon-pink bg-[#E31366]/10 text-neon-pink",
+            description: "Analysis indicates favorable metrics across major indicators.",
+            audioFile: "play_legit.mp3"
+          };
+        case 'medium':
+        case 'moderate':
+          return {
+            verdict: "Likely Risky",
+            icon: <AlertTriangle className="h-6 w-6 text-neon-orange" />,
+            color: "border-neon-orange bg-[#FF8630]/10 text-neon-orange",
+            description: "Some concerning indicators present. Proceed with caution.",
+            audioFile: "play_risky.mp3"
+          };
+        case 'high':
+        case 'critical':
+          return {
+            verdict: "High Risk – Caution Advised",
+            icon: <XCircle className="h-6 w-6 text-neon-red" />,
+            color: "destructive",
+            description: "Multiple critical issues detected. Exercise extreme caution.",
+            audioFile: "play_danger.mp3"
+          };
+        default:
+          break;
+      }
+    }
+    
+    // Default calculation based on scores
     const availableScores = [
       scores.trust_score, 
       scores.developer_score, 
@@ -189,6 +241,18 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
       }
     }
   }, [verdictInfo.audioFile, audioPlayed]);
+  
+  // Calculate total checks completed
+  const totalCompletedChecks = 
+    (totalChecks.critical || 0) + 
+    (totalChecks.risky || 0) + 
+    (totalChecks.medium || 0) + 
+    (totalChecks.neutral || 0) + 
+    (totalChecks.good || 0) + 
+    (totalChecks.great || 0);
+  
+  // Calculate total checks
+  const totalPossibleChecks = totalCompletedChecks + (totalChecks.unavailable || 0);
   
   return (
     <div className="w-full max-w-4xl mx-auto animate-fade-in">
@@ -260,7 +324,70 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
         </div>
       </div>
       
-      {/* Rest of the component remains unchanged */}
+      {/* Display total checks if available */}
+      {totalPossibleChecks > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold">Security Checks</h3>
+            <Badge variant="outline" className="text-sm">
+              {totalCompletedChecks}/{totalPossibleChecks}
+            </Badge>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2">
+            {totalChecks.critical !== undefined && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-red-900/20">
+                <CircleX className="h-4 w-4 text-red-500" />
+                <span className="text-sm">Critical: {totalChecks.critical}</span>
+              </div>
+            )}
+            
+            {totalChecks.risky !== undefined && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-orange-900/20">
+                <CircleAlert className="h-4 w-4 text-orange-500" />
+                <span className="text-sm">Risky: {totalChecks.risky}</span>
+              </div>
+            )}
+            
+            {totalChecks.medium !== undefined && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-yellow-900/20">
+                <Info className="h-4 w-4 text-yellow-500" />
+                <span className="text-sm">Medium: {totalChecks.medium}</span>
+              </div>
+            )}
+            
+            {totalChecks.neutral !== undefined && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-900/20">
+                <Info className="h-4 w-4 text-blue-500" />
+                <span className="text-sm">Neutral: {totalChecks.neutral}</span>
+              </div>
+            )}
+            
+            {totalChecks.good !== undefined && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-green-900/20">
+                <CircleCheck className="h-4 w-4 text-green-500" />
+                <span className="text-sm">Good: {totalChecks.good}</span>
+              </div>
+            )}
+            
+            {totalChecks.great !== undefined && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-900/20">
+                <CircleCheck className="h-4 w-4 text-emerald-500" />
+                <span className="text-sm">Great: {totalChecks.great}</span>
+              </div>
+            )}
+            
+            {totalChecks.unavailable !== undefined && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-900/20">
+                <Info className="h-4 w-4 text-gray-500" />
+                <span className="text-sm">N/A: {totalChecks.unavailable}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Score cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <ScoreCardWithInfo 
           title="Trust Score" 
@@ -268,12 +395,16 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
           type="trust"
           description={scoreDescriptions.trust}
           icon={<Shield className="h-6 w-6" />}
+          checksCompleted={totalChecks.good || 0}
+          totalChecks={(totalChecks.good || 0) + (totalChecks.unavailable || 0)}
         />
         <ScoreCardWithInfo 
           title="Developer Score" 
           score={scores.developer_score}
           type="developer"
           description={scoreDescriptions.developer}
+          checksCompleted={totalChecks.good || 0}
+          totalChecks={(totalChecks.good || 0) + (totalChecks.unavailable || 0)}
         />
         <ScoreCardWithInfo 
           title="Liquidity Score" 
@@ -281,6 +412,8 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
           type="liquidity"
           description={scoreDescriptions.liquidity}
           icon={<Droplet className="h-6 w-6" />}
+          checksCompleted={totalChecks.good || 0}
+          totalChecks={(totalChecks.good || 0) + (totalChecks.unavailable || 0)}
         />
       </div>
       
@@ -293,6 +426,8 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
               type="community"
               description={scoreDescriptions.community}
               icon={<Users className="h-6 w-6" />}
+              checksCompleted={totalChecks.good || 0}
+              totalChecks={(totalChecks.good || 0) + (totalChecks.unavailable || 0)}
             />
           )}
           
@@ -303,6 +438,8 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
               type="holders"
               description={scoreDescriptions.holders}
               icon={<BarChart2 className="h-6 w-6" />}
+              checksCompleted={totalChecks.good || 0}
+              totalChecks={(totalChecks.good || 0) + (totalChecks.unavailable || 0)}
             />
           )}
           
@@ -314,6 +451,8 @@ const AnalysisReport: React.FC<AnalysisReportProps> = ({
               description={scoreDescriptions.fraud}
               icon={<AlertTriangle className="h-6 w-6" />}
               invertScore={true}
+              checksCompleted={totalChecks.risky || 0}
+              totalChecks={(totalChecks.risky || 0) + (totalChecks.unavailable || 0)}
             />
           )}
         </div>
@@ -379,6 +518,8 @@ interface ScoreCardWithInfoProps {
   description: string;
   icon?: React.ReactNode;
   invertScore?: boolean;
+  checksCompleted?: number;
+  totalChecks?: number;
 }
 
 const ScoreCardWithInfo: React.FC<ScoreCardWithInfoProps> = ({ 
@@ -387,7 +528,9 @@ const ScoreCardWithInfo: React.FC<ScoreCardWithInfoProps> = ({
   type, 
   description,
   icon,
-  invertScore = false
+  invertScore = false,
+  checksCompleted,
+  totalChecks
 }) => {
   const scoreType = type as 'trust' | 'developer' | 'liquidity';
   
@@ -397,6 +540,8 @@ const ScoreCardWithInfo: React.FC<ScoreCardWithInfoProps> = ({
         title={title}
         score={score}
         type={scoreType}
+        checksCompleted={checksCompleted}
+        totalChecks={totalChecks}
       />
       <div className="absolute top-2 right-2">
         <HoverCard>

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 
 // Initialize Google Generative AI
@@ -31,6 +30,22 @@ interface AIAnalysisResult {
   verdict: string;
   summary: string;
   raw?: string;
+  riskCategory?: string;
+  securityChecks?: {
+    critical: number;
+    risky: number;
+    medium: number;
+    neutral: number;
+    good: number;
+    great: number;
+    unavailable: number;
+  };
+  detailedAnalysis?: string;
+  issuesList?: Array<{
+    type: string;
+    description: string;
+    severity: string;
+  }>;
 }
 
 // Network API URLs and keys mapping
@@ -151,12 +166,36 @@ async function getTokenData(address: string, network: string = 'ethereum'): Prom
   }
 }
 
+// Function to get contract source code and check for potential issues
+async function getContractSource(address: string, network: string = 'ethereum'): Promise<any> {
+  try {
+    const networkConfig = NETWORK_APIS[network as keyof typeof NETWORK_APIS] || NETWORK_APIS.ethereum;
+    
+    const response = await fetch(`${networkConfig.url}?module=contract&action=getsourcecode&address=${address}&apikey=${networkConfig.key}`);
+    const data = await response.json();
+    
+    if (data.status === "1" && data.result && data.result.length > 0) {
+      return data.result[0];
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error getting contract source:", error);
+    return null;
+  }
+}
+
 // Function to generate AI analysis using Google Gemini
 async function generateAIAnalysis(inputData: any): Promise<AIAnalysisResult> {
   try {
     // Use the API key from environment variables or the provided one
-    const apiKey = Deno.env.get("GEMINI_API_KEY") || "AIzaSyCKcAc1ZYcoviJ-6tdm-HuRguPMjMz6OSA";
+    const apiKey = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("VITE_GEMINI_API_KEY") || "";
     console.log("Using API key (masked):", apiKey ? "***" + apiKey.substring(apiKey.length - 5) : "Not provided");
+    
+    if (!apiKey) {
+      throw new Error("Gemini API key is not provided");
+    }
+    
     const genAI = new GoogleGenerativeAI(apiKey);
     
     // Use gemini-1.0-pro instead of gemini-pro to ensure compatibility
@@ -165,21 +204,69 @@ async function generateAIAnalysis(inputData: any): Promise<AIAnalysisResult> {
     // Include token name if available
     const tokenName = inputData.tokenName !== 'Unknown' ? inputData.tokenName : '';
     
+    // Get contract source if available
+    let contractSource = null;
+    if (inputData.address && inputData.type === 'contract') {
+      contractSource = await getContractSource(inputData.address, inputData.network);
+    }
+    
+    // Enhanced prompt with security checks
     const prompt = `
-You're an AI that scores blockchain wallets and tokens for reputation. 
-Based on this data, give a trust score (0-100), a developer score (0-100), a liquidity score (0-100), verdict, and short reasoning.
+You are ReputeX AI, a specialized blockchain token analyzer. You're analyzing a token or wallet address to assess its security, risk level, and legitimacy.
 ${tokenName ? `The token name is "${tokenName}". Refer to this token by name in your analysis.` : ''}
 
-Data:
+Data about the token/address:
 ${JSON.stringify(inputData, null, 2)}
+
+${contractSource ? `The contract source code is also available for analysis:
+${JSON.stringify({ 
+  contractName: contractSource.ContractName,
+  compiler: contractSource.CompilerVersion,
+  verified: contractSource.ABI !== "Contract source code not verified",
+  implementation: contractSource.Implementation || "None" 
+}, null, 2)}` : ''}
+
+Based on this data, perform a comprehensive security analysis and provide:
+1. A trust score (0-100)
+2. A developer score (0-100)
+3. A liquidity score (0-100)
+4. A risk category (Low, Medium, or High)
+5. A detailed analysis of potential security issues
+6. Count of security checks in these categories:
+   - critical: Issues that indicate the token is likely a scam
+   - risky: Concerning issues that could impact investor safety
+   - medium: Moderate risk issues
+   - neutral: Neither positive nor negative
+   - good: Positive security features
+   - great: Excellent security practices
+   - unavailable: Checks that couldn't be performed due to missing data
 
 Respond in JSON:
 {
   "trustScore": <number>,
   "developerScore": <number>,
   "liquidityScore": <number>,
-  "verdict": "<Likely Legit / Moderate Risk / High Risk>",
-  "summary": "<short explanation - include the token name '${tokenName}' if provided>"
+  "riskCategory": "<Low/Medium/High>",
+  "verdict": "<single sentence verdict>",
+  "summary": "<3-5 sentence summary - include the token name '${tokenName}' if provided>",
+  "detailedAnalysis": "<paragraph with detailed security analysis>",
+  "securityChecks": {
+    "critical": <number>,
+    "risky": <number>,
+    "medium": <number>,
+    "neutral": <number>,
+    "good": <number>,
+    "great": <number>,
+    "unavailable": <number>
+  },
+  "issuesList": [
+    {
+      "type": "<issue type>",
+      "description": "<brief description>",
+      "severity": "<Critical/Risky/Medium/Neutral/Good/Great>"
+    }
+    // Add more issues if found
+  ]
 }
 `;
 
@@ -192,12 +279,24 @@ Respond in JSON:
       return JSON.parse(text);
     } catch (e) {
       console.error("Error parsing Gemini response:", e);
+      // Provide fallback values with security checks
       return { 
         trustScore: 50, 
         developerScore: 50,
         liquidityScore: 50,
+        riskCategory: "Medium",
         verdict: "Uncertain",
         summary: `Could not analyze data properly${tokenName ? ` for ${tokenName}` : ''}.`,
+        detailedAnalysis: "The analysis could not be completed due to technical issues. Please try again later.",
+        securityChecks: {
+          critical: 0,
+          risky: 0,
+          medium: 1,
+          neutral: 0,
+          good: 0,
+          great: 0, 
+          unavailable: 10
+        },
         raw: text 
       };
     }
@@ -205,9 +304,21 @@ Respond in JSON:
     console.error("AI analysis error:", error);
     const tokenName = inputData.tokenName !== 'Unknown' ? inputData.tokenName : '';
     return { 
-      trustScore: 0, 
+      trustScore: 0,
+      developerScore: 0,
+      liquidityScore: 0, 
+      riskCategory: "Medium",
       verdict: "Error",
-      summary: `AI analysis failed${tokenName ? ` for ${tokenName}` : ''}: ` + (error instanceof Error ? error.message : String(error))
+      summary: `AI analysis failed${tokenName ? ` for ${tokenName}` : ''}: ` + (error instanceof Error ? error.message : String(error)),
+      securityChecks: {
+        critical: 0,
+        risky: 0,
+        medium: 0,
+        neutral: 0,
+        good: 0,
+        great: 0,
+        unavailable: 11
+      }
     };
   }
 }
@@ -276,14 +387,30 @@ serve(async (req) => {
     const aiResult = await generateAIAnalysis(inputData);
     console.log("AI analysis result:", aiResult);
     
-    return new Response(JSON.stringify({ 
+    // Map results to our api response format
+    const response = {
       ...aiResult,
+      trust_score: aiResult.trustScore,
+      developer_score: aiResult.developerScore,
+      liquidity_score: aiResult.liquidityScore,
       tokenName: tokenData.tokenName,
       symbol: tokenData.symbol,
       address,
       network,
       timestamp: new Date().toISOString(),
-    }), {
+      totalChecks: aiResult.securityChecks || {
+        critical: 0,
+        risky: 0,
+        medium: 0,
+        neutral: 0,
+        good: 0,
+        great: 0,
+        unavailable: 0
+      },
+      analysis: aiResult.summary || aiResult.verdict,
+    };
+    
+    return new Response(JSON.stringify(response), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });

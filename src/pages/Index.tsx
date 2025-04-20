@@ -88,6 +88,16 @@ const Index = () => {
           holder_distribution: aiAnalysisResponse.data.holder_distribution || Math.floor(Math.random() * 40) + 40,
           fraud_risk: aiAnalysisResponse.data.fraud_risk || Math.floor(Math.random() * 30) + 10,
           network: network,
+          riskCategory: aiAnalysisResponse.data.riskCategory || "Medium",
+          totalChecks: aiAnalysisResponse.data.totalChecks || {
+            critical: 0,
+            risky: 0,
+            medium: 0,
+            neutral: 0,
+            good: 0,
+            great: 0,
+            unavailable: 0
+          }
         };
         
         // Store the analysis result
@@ -187,6 +197,8 @@ const Index = () => {
               }}
               analysis={analysis.analysis || analysis.summary}
               timestamp={analysis.timestamp}
+              riskCategory={analysis.riskCategory}
+              totalChecks={analysis.totalChecks}
             />
           )}
           
