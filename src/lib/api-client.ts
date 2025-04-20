@@ -1,5 +1,5 @@
 
-import { supabaseClient } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 interface WalletTransactionResponse {
   data: {
@@ -84,7 +84,7 @@ export async function getRepoActivity(
 export async function getAIAnalysis(data: any): Promise<AIAnalysisResponse> {
   try {
     // Call the Supabase Edge Function to analyze the token/address
-    const { data: analysisData, error } = await supabaseClient.functions.invoke('analyze', {
+    const { data: analysisData, error } = await supabase.functions.invoke('analyze', {
       body: {
         address: data.address,
         network: data.network || 'ethereum',
@@ -148,9 +148,8 @@ export async function getAIAnalysis(data: any): Promise<AIAnalysisResponse> {
 export async function checkBlockchainForScore(address: string): Promise<AIAnalysisResponse> {
   try {
     // Try to get existing score from database
-    const { data: scoreData, error } = await supabaseClient.functions.invoke('token-score', {
-      method: 'GET',
-      path: `ethereum/${address}`,
+    const { data: scoreData, error } = await supabase.functions.invoke('token-score', {
+      body: { address, network: 'ethereum' }
     });
 
     if (error || !scoreData) {
@@ -196,4 +195,35 @@ export async function storeScoreOnBlockchain(
   
   // In a real implementation, we would call our database or blockchain storage API
   return Promise.resolve({ success: true });
+}
+
+export async function getScoreHistory(): Promise<{ data: any[] }> {
+  try {
+    // In a real app, fetch history from Supabase
+    return Promise.resolve({
+      data: [
+        {
+          address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
+          trustScore: 87,
+          timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          network: 'ethereum',
+        },
+        {
+          address: '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9',
+          trustScore: 92,
+          timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          network: 'ethereum',
+        },
+        {
+          address: '0x514910771af9ca656af840dff83e8264ecf986ca',
+          trustScore: 76,
+          timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          network: 'ethereum',
+        }
+      ]
+    });
+  } catch (error) {
+    console.error("Error fetching score history:", error);
+    return { data: [] };
+  }
 }

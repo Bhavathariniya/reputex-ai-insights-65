@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.0";
 // Handle CORS headers
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
@@ -25,22 +25,45 @@ serve(async (req) => {
     });
   }
   
-  // Extract address and network from URL
-  const url = new URL(req.url);
-  const path = url.pathname.split('/');
-  
-  // Expected path format: /token-score/ethereum/0xaddress
-  if (path.length < 4) {
-    return new Response(JSON.stringify({ error: "Invalid request path. Use /token-score/{network}/{address}" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-  
-  const network = path[2].toLowerCase();
-  const address = path[3].toLowerCase();
-  
   try {
+    let address, network;
+    
+    // Handle both GET requests via URL and POST requests via body
+    if (req.method === "GET") {
+      // Extract address and network from URL
+      const url = new URL(req.url);
+      const path = url.pathname.split('/');
+      
+      // Expected path format: /token-score/ethereum/0xaddress
+      if (path.length < 4) {
+        return new Response(JSON.stringify({ error: "Invalid request path. Use /token-score/{network}/{address}" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
+      network = path[2].toLowerCase();
+      address = path[3].toLowerCase();
+    } else if (req.method === "POST") {
+      // Extract address and network from request body
+      const { address: bodyAddress, network: bodyNetwork } = await req.json();
+      
+      if (!bodyAddress) {
+        return new Response(JSON.stringify({ error: "Address is required in the request body" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
+      address = bodyAddress.toLowerCase();
+      network = (bodyNetwork || 'ethereum').toLowerCase();
+    } else {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), {
+        status: 405,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    
     const supabase = await getSupabaseClient();
     
     // Query the database for the token assessment
